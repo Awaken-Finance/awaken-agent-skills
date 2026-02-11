@@ -89,6 +89,43 @@ cp .env.example .env
 # Edit .env — add your AELF_PRIVATE_KEY
 ```
 
+### 3. One-Command Setup (Recommended)
+
+```bash
+# Setup for Claude Desktop
+bun run bin/setup.ts claude
+
+# Setup for Cursor (project-level)
+bun run bin/setup.ts cursor
+
+# Setup for Cursor (global)
+bun run bin/setup.ts cursor --global
+
+# Generate OpenClaw config
+bun run bin/setup.ts openclaw
+
+# Check configuration status
+bun run bin/setup.ts list
+
+# Remove config from a platform
+bun run bin/setup.ts uninstall claude
+```
+
+The setup tool auto-detects your OS, resolves paths, and merges config safely (won't overwrite other MCP servers). After setup, edit the generated config to replace `<YOUR_PRIVATE_KEY>` with your actual key.
+
+**Advanced options:**
+
+```bash
+# Custom config file path
+bun run bin/setup.ts claude --config-path /custom/path/config.json
+
+# Custom MCP server path
+bun run bin/setup.ts cursor --server-path /my/custom/server.ts
+
+# Force overwrite existing entry
+bun run bin/setup.ts claude --force
+```
+
 **Config priority (high → low):**
 
 1. Function params (SDK callers)

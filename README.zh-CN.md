@@ -89,6 +89,43 @@ cp .env.example .env
 # 编辑 .env — 填入你的 AELF_PRIVATE_KEY
 ```
 
+### 3. 一键配置（推荐）
+
+```bash
+# 配置 Claude Desktop
+bun run bin/setup.ts claude
+
+# 配置 Cursor（项目级）
+bun run bin/setup.ts cursor
+
+# 配置 Cursor（全局）
+bun run bin/setup.ts cursor --global
+
+# 生成 OpenClaw 配置
+bun run bin/setup.ts openclaw
+
+# 查看配置状态
+bun run bin/setup.ts list
+
+# 从平台移除配置
+bun run bin/setup.ts uninstall claude
+```
+
+setup 工具自动检测操作系统、推导路径、安全合并配置（不会覆盖其他 MCP server）。配置完成后，编辑生成的配置文件，将 `<YOUR_PRIVATE_KEY>` 替换为你的实际私钥。
+
+**高级选项：**
+
+```bash
+# 自定义配置文件路径
+bun run bin/setup.ts claude --config-path /custom/path/config.json
+
+# 自定义 MCP server 路径
+bun run bin/setup.ts cursor --server-path /my/custom/server.ts
+
+# 强制覆盖已有配置
+bun run bin/setup.ts claude --force
+```
+
 **配置优先级（高 → 低）：**
 
 1. 函数参数（SDK 调用者）

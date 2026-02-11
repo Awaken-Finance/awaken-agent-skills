@@ -1,6 +1,6 @@
 {
   "name": "@awaken-finance/agent-kit",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "AI Agent toolkit for Awaken DEX on aelf blockchain — swap tokens, manage liquidity, fetch K-line data. Supports MCP, CLI, and SDK usage.",
   "type": "module",
   "main": "index.ts",
@@ -8,10 +8,14 @@
     ".": "./index.ts",
     "./mcp": "./src/mcp/server.ts"
   },
+  "bin": {
+    "awaken-setup": "./bin/setup.ts"
+  },
   "files": [
     "index.ts",
     "src/",
     "lib/",
+    "bin/",
     "cli-helpers.ts",
     "awaken_query_skill.ts",
     "awaken_trade_skill.ts",
@@ -23,6 +27,7 @@
     "LICENSE"
   ],
   "scripts": {
+    "setup": "bun run bin/setup.ts",
     "mcp": "bun run src/mcp/server.ts",
     "test": "bun test __tests__/",
     "test:unit": "bun test __tests__/unit/",
