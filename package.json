@@ -1,0 +1,70 @@
+{
+  "name": "@awaken-finance/agent-kit",
+  "version": "1.0.0",
+  "description": "AI Agent toolkit for Awaken DEX on aelf blockchain — swap tokens, manage liquidity, fetch K-line data. Supports MCP, CLI, and SDK usage.",
+  "type": "module",
+  "main": "index.ts",
+  "exports": {
+    ".": "./index.ts",
+    "./mcp": "./src/mcp/server.ts"
+  },
+  "files": [
+    "index.ts",
+    "src/",
+    "lib/",
+    "cli-helpers.ts",
+    "awaken_query_skill.ts",
+    "awaken_trade_skill.ts",
+    "awaken_kline_skill.ts",
+    "openclaw.json",
+    "mcp-config.example.json",
+    "README.md",
+    "README.zh-CN.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "mcp": "bun run src/mcp/server.ts",
+    "test": "bun test __tests__/",
+    "test:unit": "bun test __tests__/unit/",
+    "test:integration": "bun test __tests__/integration/",
+    "test:e2e": "bun test __tests__/e2e/"
+  },
+  "keywords": [
+    "awaken",
+    "aelf",
+    "dex",
+    "swap",
+    "liquidity",
+    "kline",
+    "ai-agent",
+    "mcp",
+    "model-context-protocol",
+    "langchain",
+    "blockchain",
+    "defi"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AwakenFinance/awaken-agent-skills.git"
+  },
+  "homepage": "https://github.com/AwakenFinance/awaken-agent-skills#readme",
+  "bugs": {
+    "url": "https://github.com/AwakenFinance/awaken-agent-skills/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@microsoft/signalr": "^8.0.0",
+    "@modelcontextprotocol/sdk": "^1.26.0",
+    "aelf-sdk": "^3.4.8",
+    "axios": "^1.7.0",
+    "bignumber.js": "^9.1.2",
+    "commander": "^12.1.0",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  }
+}
