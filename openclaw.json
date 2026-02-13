@@ -33,25 +33,25 @@
     {
       "name": "awaken-trade-swap",
       "command": "bun run awaken_trade_skill.ts swap --symbol-in {{symbolIn}} --symbol-out {{symbolOut}} --amount-in {{amountIn}} --slippage {{slippage}}",
-      "description": "Execute a token swap on Awaken DEX. REQUIRES AELF_PRIVATE_KEY env var. This sends a real on-chain transaction. Parameters: --symbol-in (token to sell), --symbol-out (token to buy), --amount-in (human-readable amount to sell), --slippage (tolerance, default 0.005 = 0.5%). The tool auto-queries the best route, approves if needed, and executes the swap. Returns: transactionId, estimated amounts, explorer URL.",
+      "description": "Execute a token swap on Awaken DEX. Requires wallet env vars: AELF_PRIVATE_KEY (EOA) or PORTKEY_PRIVATE_KEY + PORTKEY_CA_HASH + PORTKEY_CA_ADDRESS (CA). This sends a real on-chain transaction. Parameters: --symbol-in (token to sell), --symbol-out (token to buy), --amount-in (human-readable amount to sell), --slippage (tolerance, default 0.005 = 0.5%). The tool auto-queries the best route, approves if needed, and executes the swap. Returns: transactionId, estimated amounts, explorer URL.",
       "cwd": "."
     },
     {
       "name": "awaken-trade-add-liquidity",
       "command": "bun run awaken_trade_skill.ts add-liquidity --token-a {{tokenA}} --token-b {{tokenB}} --amount-a {{amountA}} --amount-b {{amountB}} --fee-rate {{feeRate}}",
-      "description": "Add liquidity to an Awaken DEX trading pair. REQUIRES AELF_PRIVATE_KEY env var. Parameters: --token-a and --token-b (token symbols), --amount-a and --amount-b (human-readable amounts), --fee-rate (pool fee tier, default 0.3), --slippage (tolerance, default 0.005). Auto-approves both tokens before adding.",
+      "description": "Add liquidity to an Awaken DEX trading pair. Requires wallet env vars (EOA or CA). Parameters: --token-a and --token-b (token symbols), --amount-a and --amount-b (human-readable amounts), --fee-rate (pool fee tier, default 0.3), --slippage (tolerance, default 0.005). Auto-approves both tokens before adding.",
       "cwd": "."
     },
     {
       "name": "awaken-trade-remove-liquidity",
       "command": "bun run awaken_trade_skill.ts remove-liquidity --token-a {{tokenA}} --token-b {{tokenB}} --lp-amount {{lpAmount}} --fee-rate {{feeRate}}",
-      "description": "Remove liquidity from an Awaken DEX trading pair. REQUIRES AELF_PRIVATE_KEY env var. Parameters: --token-a and --token-b (token symbols), --lp-amount (LP token amount to burn), --fee-rate (pool fee tier, default 0.3). Returns the underlying tokens to your wallet.",
+      "description": "Remove liquidity from an Awaken DEX trading pair. Requires wallet env vars (EOA or CA). Parameters: --token-a and --token-b (token symbols), --lp-amount (LP token amount to burn), --fee-rate (pool fee tier, default 0.3). Returns the underlying tokens to your wallet.",
       "cwd": "."
     },
     {
       "name": "awaken-trade-approve",
       "command": "bun run awaken_trade_skill.ts approve --symbol {{symbol}} --spender {{spender}} --amount {{amount}}",
-      "description": "Approve a contract to spend your tokens. REQUIRES AELF_PRIVATE_KEY env var. Parameters: --symbol (token to approve), --spender (contract address), --amount (human-readable amount). Use this before swap/liquidity if you need manual control over approvals.",
+      "description": "Approve a contract to spend your tokens. Requires wallet env vars (EOA or CA). Parameters: --symbol (token to approve), --spender (contract address), --amount (human-readable amount). Use this before swap/liquidity if you need manual control over approvals.",
       "cwd": "."
     },
     {
