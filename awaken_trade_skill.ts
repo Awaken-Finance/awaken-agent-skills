@@ -3,12 +3,12 @@
 // Awaken Trade Skill - CLI Adapter (thin shell)
 // ============================================================
 // Commands: swap, add-liquidity, remove-liquidity, approve
-// Requires: AELF_PRIVATE_KEY env var
+// Requires: AELF_PRIVATE_KEY (EOA) or PORTKEY_PRIVATE_KEY + CA env vars
 // Core logic lives in src/core/trade.ts
 
 import { Command } from 'commander';
+import { createSignerFromEnv } from '@portkey/aelf-signer';
 import { getNetworkConfig, DEFAULT_SLIPPAGE } from './lib/config';
-import { getWalletByPrivateKey } from './lib/aelf-client';
 import { outputSuccess, outputError } from './cli-helpers';
 import { executeSwap, addLiquidity, removeLiquidity, approveTokenSpending } from './src/core/trade';
 
@@ -16,7 +16,7 @@ const program = new Command();
 
 program
   .name('awaken-trade')
-  .description('Awaken DEX trading tool (requires AELF_PRIVATE_KEY)')
+  .description('Awaken DEX trading tool (requires AELF_PRIVATE_KEY or Portkey CA env vars)')
   .version('1.0.0')
   .option('--network <network>', 'Network: mainnet or testnet', process.env.AWAKEN_NETWORK || 'mainnet');
 
@@ -31,8 +31,8 @@ program
   .action(async (opts) => {
     try {
       const config = getNetworkConfig(program.opts().network);
-      const wallet = getWalletByPrivateKey();
-      const result = await executeSwap(config, wallet, {
+      const signer = createSignerFromEnv();
+      const result = await executeSwap(config, signer, {
         symbolIn: opts.symbolIn,
         symbolOut: opts.symbolOut,
         amountIn: opts.amountIn,
@@ -57,8 +57,8 @@ program
   .action(async (opts) => {
     try {
       const config = getNetworkConfig(program.opts().network);
-      const wallet = getWalletByPrivateKey();
-      const result = await addLiquidity(config, wallet, {
+      const signer = createSignerFromEnv();
+      const result = await addLiquidity(config, signer, {
         tokenA: opts.tokenA,
         tokenB: opts.tokenB,
         amountA: opts.amountA,
@@ -84,8 +84,8 @@ program
   .action(async (opts) => {
     try {
       const config = getNetworkConfig(program.opts().network);
-      const wallet = getWalletByPrivateKey();
-      const result = await removeLiquidity(config, wallet, {
+      const signer = createSignerFromEnv();
+      const result = await removeLiquidity(config, signer, {
         tokenA: opts.tokenA,
         tokenB: opts.tokenB,
         lpAmount: opts.lpAmount,
@@ -108,8 +108,8 @@ program
   .action(async (opts) => {
     try {
       const config = getNetworkConfig(program.opts().network);
-      const wallet = getWalletByPrivateKey();
-      const result = await approveTokenSpending(config, wallet, {
+      const signer = createSignerFromEnv();
+      const result = await approveTokenSpending(config, signer, {
         symbol: opts.symbol,
         spender: opts.spender,
         amount: opts.amount,
