@@ -184,14 +184,35 @@ All commands output standardized JSON on success. Errors go to stderr with `[ERR
 
 2. Update the path and environment variables:
 
+**EOA mode** (direct private key signing):
+
 ```json
 {
   "mcpServers": {
     "awaken-agent-kit": {
       "command": "bun",
-      "args": ["run", "/ABSOLUTE/PATH/TO/scripts/skills/src/mcp/server.ts"],
+      "args": ["run", "/ABSOLUTE/PATH/TO/src/mcp/server.ts"],
       "env": {
         "AELF_PRIVATE_KEY": "your_private_key_here",
+        "AWAKEN_NETWORK": "mainnet"
+      }
+    }
+  }
+}
+```
+
+**CA mode** (Portkey Contract Account):
+
+```json
+{
+  "mcpServers": {
+    "awaken-agent-kit": {
+      "command": "bun",
+      "args": ["run", "/ABSOLUTE/PATH/TO/src/mcp/server.ts"],
+      "env": {
+        "PORTKEY_PRIVATE_KEY": "your_manager_private_key",
+        "PORTKEY_CA_HASH": "your_ca_hash",
+        "PORTKEY_CA_ADDRESS": "your_ca_address",
         "AWAKEN_NETWORK": "mainnet"
       }
     }
@@ -279,7 +300,10 @@ bun run test:e2e
 
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
-| `AELF_PRIVATE_KEY` | For trades | — | aelf wallet private key |
+| `AELF_PRIVATE_KEY` | For trades (EOA) | — | aelf wallet private key |
+| `PORTKEY_PRIVATE_KEY` | For trades (CA) | — | Portkey Manager private key |
+| `PORTKEY_CA_HASH` | For trades (CA) | — | Portkey CA hash |
+| `PORTKEY_CA_ADDRESS` | For trades (CA) | — | Portkey CA address |
 | `AWAKEN_NETWORK` | No | `mainnet` | `mainnet` or `testnet` |
 | `AWAKEN_RPC_URL` | No | Per network | Override RPC endpoint |
 | `AWAKEN_API_BASE_URL` | No | Per network | Override API endpoint |

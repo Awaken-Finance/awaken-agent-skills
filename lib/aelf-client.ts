@@ -2,10 +2,11 @@
 // Awaken OpenClaw Skills - aelf SDK Client
 // ============================================================
 // Wraps aelf-sdk for both view (read) and send (write) contract calls.
-// For send methods, requires AELF_PRIVATE_KEY env var.
+// Supports both EOA and CA wallets via @portkey/aelf-signer.
 
 import AElf from 'aelf-sdk';
 import BigNumber from 'bignumber.js';
+import type { AelfSigner } from '@portkey/aelf-signer';
 import type { NetworkConfig, TxResult } from './types';
 
 // ---- Caches ----
@@ -141,21 +142,26 @@ export async function getTokenInfo(
 
 // ---- Approve ----
 
+/**
+ * Approve a contract to spend tokens.
+ * Accepts AelfSigner (EOA or CA) — signing is handled transparently.
+ */
 export async function approveToken(
   config: NetworkConfig,
-  wallet: any,
+  signer: AelfSigner,
   symbol: string,
   spender: string,
   amount: string,
 ): Promise<TxResult> {
-  const result = await callSendMethod(config.rpcUrl, config.tokenContract, 'Approve', wallet, {
+  const result = await signer.sendContractCall(config.rpcUrl, config.tokenContract, 'Approve', {
     symbol,
     spender,
     amount,
   });
-  const txId = result?.TransactionId || result?.transactionId;
-  if (!txId) throw new Error('[ERROR] Approve failed: no transactionId returned');
-  return getTxResult(config.rpcUrl, txId);
+  return {
+    transactionId: result.transactionId,
+    status: (result.txResult.Status || 'mined').toLowerCase(),
+  };
 }
 
 // ---- Utility ----

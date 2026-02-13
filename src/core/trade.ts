@@ -12,14 +12,12 @@ import {
   CHANNEL_ID,
   SWAP_LABS_FEE_RATE,
 } from '../../lib/config';
+import type { AelfSigner } from '@portkey/aelf-signer';
 import {
-  getWalletByPrivateKey,
-  callSendMethod,
   callViewMethod,
   getTokenInfo,
   getAllowance,
   approveToken,
-  getTxResult,
   timesDecimals,
   divDecimals,
 } from '../../lib/aelf-client';
@@ -33,24 +31,23 @@ import type {
   LiquidityRemoveResult,
   ApproveParams,
   ApproveResult,
-  TxResult,
 } from '../../lib/types';
 
 // ---- Helper: ensure approval ----
 
 async function ensureApproval(
   config: NetworkConfig,
-  wallet: any,
+  signer: AelfSigner,
   symbol: string,
   spender: string,
   requiredAmount: string,
 ): Promise<void> {
-  const owner = wallet.address;
+  const owner = signer.address;
   const currentAllowance = await getAllowance(config.rpcUrl, config.tokenContract, symbol, owner, spender);
 
   if (new BigNumber(currentAllowance).lt(requiredAmount)) {
     const approveAmount = new BigNumber(requiredAmount).times(10).toFixed(0);
-    await approveToken(config, wallet, symbol, spender, approveAmount);
+    await approveToken(config, signer, symbol, spender, approveAmount);
   }
 }
 
@@ -58,10 +55,10 @@ async function ensureApproval(
 
 export async function executeSwap(
   config: NetworkConfig,
-  wallet: any,
+  signer: AelfSigner,
   params: SwapParams,
 ): Promise<SwapResult> {
-  const account = wallet.address;
+  const account = signer.address;
   const slippage = params.slippage || DEFAULT_SLIPPAGE;
 
   // 1. Get token info
@@ -109,28 +106,23 @@ export async function executeSwap(
   const swapHookAddress = config.swapHookContract;
 
   // 5. Approve input token to swap hook contract
-  await ensureApproval(config, wallet, params.symbolIn, swapHookAddress, rawAmountIn);
+  await ensureApproval(config, signer, params.symbolIn, swapHookAddress, rawAmountIn);
 
-  // 6. Execute swap via swap hook contract
-  const result = await callSendMethod(config.rpcUrl, swapHookAddress, 'SwapExactTokensForTokens', wallet, {
+  // 6. Execute swap via signer (EOA: direct sign, CA: ManagerForwardCall)
+  const sendResult = await signer.sendContractCall(config.rpcUrl, swapHookAddress, 'SwapExactTokensForTokens', {
     swapTokens,
     labsFeeRate: SWAP_LABS_FEE_RATE,
   });
 
-  const txId = result?.TransactionId || result?.transactionId;
-  if (!txId) throw new Error('Swap failed: no transactionId returned');
-
-  const txResult = await getTxResult(config.rpcUrl, txId);
-
   return {
-    transactionId: txResult.transactionId,
-    status: txResult.status,
+    transactionId: sendResult.transactionId,
+    status: (sendResult.txResult.Status || 'mined').toLowerCase(),
     symbolIn: params.symbolIn,
     symbolOut: params.symbolOut,
     amountIn: params.amountIn,
     estimatedAmountOut: divDecimals(rawAmountOut, tokenOutInfo.decimals).toFixed(),
     minAmountOut: divDecimals(amountOutMin, tokenOutInfo.decimals).toFixed(),
-    explorerUrl: `${config.explorerUrl}/tx/${txResult.transactionId}`,
+    explorerUrl: `${config.explorerUrl}/tx/${sendResult.transactionId}`,
   };
 }
 
@@ -138,10 +130,10 @@ export async function executeSwap(
 
 export async function addLiquidity(
   config: NetworkConfig,
-  wallet: any,
+  signer: AelfSigner,
   params: LiquidityAddParams,
 ): Promise<LiquidityAddResult> {
-  const account = wallet.address;
+  const account = signer.address;
   const feeRate = params.feeRate || '0.3';
   const slippage = params.slippage || DEFAULT_SLIPPAGE;
 
@@ -160,12 +152,12 @@ export async function addLiquidity(
 
   // Approve both tokens
   await Promise.all([
-    ensureApproval(config, wallet, params.tokenA, routerAddress, rawAmountA),
-    ensureApproval(config, wallet, params.tokenB, routerAddress, rawAmountB),
+    ensureApproval(config, signer, params.tokenA, routerAddress, rawAmountA),
+    ensureApproval(config, signer, params.tokenB, routerAddress, rawAmountB),
   ]);
 
-  // Execute addLiquidity
-  const result = await callSendMethod(config.rpcUrl, routerAddress, 'AddLiquidity', wallet, {
+  // Execute addLiquidity via signer
+  const sendResult = await signer.sendContractCall(config.rpcUrl, routerAddress, 'AddLiquidity', {
     symbolA: params.tokenA,
     symbolB: params.tokenB,
     amountADesired: rawAmountA,
@@ -177,20 +169,15 @@ export async function addLiquidity(
     channel: CHANNEL_ID,
   });
 
-  const txId = result?.TransactionId || result?.transactionId;
-  if (!txId) throw new Error('Add liquidity failed: no transactionId');
-
-  const txResult = await getTxResult(config.rpcUrl, txId);
-
   return {
-    transactionId: txResult.transactionId,
-    status: txResult.status,
+    transactionId: sendResult.transactionId,
+    status: (sendResult.txResult.Status || 'mined').toLowerCase(),
     tokenA: params.tokenA,
     tokenB: params.tokenB,
     amountA: params.amountA,
     amountB: params.amountB,
     feeRate,
-    explorerUrl: `${config.explorerUrl}/tx/${txResult.transactionId}`,
+    explorerUrl: `${config.explorerUrl}/tx/${sendResult.transactionId}`,
   };
 }
 
@@ -198,10 +185,10 @@ export async function addLiquidity(
 
 export async function removeLiquidity(
   config: NetworkConfig,
-  wallet: any,
+  signer: AelfSigner,
   params: LiquidityRemoveParams,
 ): Promise<LiquidityRemoveResult> {
-  const account = wallet.address;
+  const account = signer.address;
   const feeRate = params.feeRate || '0.3';
 
   const LP_DECIMALS = 8;
@@ -221,16 +208,15 @@ export async function removeLiquidity(
     spender: routerAddress,
   });
   if (new BigNumber(currentAllowance?.allowance ?? '0').lt(rawLiquidity)) {
-    const approveResult = await callSendMethod(config.rpcUrl, factoryAddress, 'Approve', wallet, {
+    await signer.sendContractCall(config.rpcUrl, factoryAddress, 'Approve', {
       symbol: lpSymbol,
       spender: routerAddress,
       amount: new BigNumber(rawLiquidity).times(10).toFixed(0),
     });
-    const approveTxId = approveResult?.TransactionId || approveResult?.transactionId;
-    if (approveTxId) await getTxResult(config.rpcUrl, approveTxId);
   }
 
-  const result = await callSendMethod(config.rpcUrl, routerAddress, 'RemoveLiquidity', wallet, {
+  // Remove liquidity via signer
+  const sendResult = await signer.sendContractCall(config.rpcUrl, routerAddress, 'RemoveLiquidity', {
     symbolA: params.tokenA,
     symbolB: params.tokenB,
     amountAMin: '1',
@@ -240,18 +226,13 @@ export async function removeLiquidity(
     deadline: { seconds: getDeadline(), nanos: 0 },
   });
 
-  const txId = result?.TransactionId || result?.transactionId;
-  if (!txId) throw new Error('Remove liquidity failed: no transactionId');
-
-  const txResult = await getTxResult(config.rpcUrl, txId);
-
   return {
-    transactionId: txResult.transactionId,
-    status: txResult.status,
+    transactionId: sendResult.transactionId,
+    status: (sendResult.txResult.Status || 'mined').toLowerCase(),
     tokenA: params.tokenA,
     tokenB: params.tokenB,
     lpAmount: params.lpAmount,
-    explorerUrl: `${config.explorerUrl}/tx/${txResult.transactionId}`,
+    explorerUrl: `${config.explorerUrl}/tx/${sendResult.transactionId}`,
   };
 }
 
@@ -259,13 +240,13 @@ export async function removeLiquidity(
 
 export async function approveTokenSpending(
   config: NetworkConfig,
-  wallet: any,
+  signer: AelfSigner,
   params: ApproveParams,
 ): Promise<ApproveResult> {
   const tokenInfo = await getTokenInfo(config.rpcUrl, config.tokenContract, params.symbol);
   const rawAmount = timesDecimals(params.amount, tokenInfo.decimals).toFixed(0);
 
-  const txResult = await approveToken(config, wallet, params.symbol, params.spender, rawAmount);
+  const txResult = await approveToken(config, signer, params.symbol, params.spender, rawAmount);
 
   return {
     transactionId: txResult.transactionId,

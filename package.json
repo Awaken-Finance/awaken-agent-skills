@@ -63,6 +63,7 @@
   "dependencies": {
     "@microsoft/signalr": "^8.0.0",
     "@modelcontextprotocol/sdk": "^1.26.0",
+    "@portkey/aelf-signer": "^1.0.0",
     "aelf-sdk": "^3.4.8",
     "axios": "^1.7.0",
     "bignumber.js": "^9.1.2",

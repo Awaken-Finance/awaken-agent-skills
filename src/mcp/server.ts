@@ -12,8 +12,8 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { z } from 'zod';
 
+import { createSignerFromEnv } from '@portkey/aelf-signer';
 import { getNetworkConfig } from '../../lib/config';
-import { getWalletByPrivateKey } from '../../lib/aelf-client';
 import { getQuote, getPair, getTokenBalance, getTokenAllowance, getLiquidityPositions } from '../core/query';
 import { executeSwap, addLiquidity, removeLiquidity, approveTokenSpending } from '../core/trade';
 import { fetchKline, getKlineIntervals } from '../core/kline';
@@ -151,14 +151,14 @@ server.registerTool(
 );
 
 // ============================================================
-// Trade Tools (require AELF_PRIVATE_KEY env var)
+// Trade Tools (require AELF_PRIVATE_KEY or PORTKEY_PRIVATE_KEY + CA env vars)
 // ============================================================
 
 server.registerTool(
   'awaken_swap',
   {
     description:
-      'Execute a token swap on Awaken DEX. REQUIRES AELF_PRIVATE_KEY env var. Sends a real on-chain transaction. Auto-queries the best route, approves if needed, and executes the swap. Returns transactionId, estimated amounts, explorer URL.',
+      'Execute a token swap on Awaken DEX. Requires wallet env vars (AELF_PRIVATE_KEY for EOA, or PORTKEY_PRIVATE_KEY + PORTKEY_CA_HASH + PORTKEY_CA_ADDRESS for CA). Sends a real on-chain transaction. Auto-queries the best route, approves if needed, and executes the swap. Returns transactionId, estimated amounts, explorer URL.',
     inputSchema: {
       symbolIn: z.string().describe('Token to sell (e.g. ELF)'),
       symbolOut: z.string().describe('Token to buy (e.g. USDT)'),
@@ -170,8 +170,8 @@ server.registerTool(
   async ({ symbolIn, symbolOut, amountIn, slippage, network }) => {
     try {
       const config = getNetworkConfig(network);
-      const wallet = getWalletByPrivateKey();
-      const result = await executeSwap(config, wallet, { symbolIn, symbolOut, amountIn, slippage });
+      const signer = createSignerFromEnv();
+      const result = await executeSwap(config, signer, { symbolIn, symbolOut, amountIn, slippage });
       return ok(result);
     } catch (err) {
       return fail(err);
@@ -183,7 +183,7 @@ server.registerTool(
   'awaken_add_liquidity',
   {
     description:
-      'Add liquidity to an Awaken DEX trading pair. REQUIRES AELF_PRIVATE_KEY env var. Auto-approves both tokens before adding.',
+      'Add liquidity to an Awaken DEX trading pair. Requires wallet env vars (EOA or CA). Auto-approves both tokens before adding.',
     inputSchema: {
       tokenA: z.string().describe('Token A symbol (e.g. ELF)'),
       tokenB: z.string().describe('Token B symbol (e.g. USDT)'),
@@ -197,8 +197,8 @@ server.registerTool(
   async ({ tokenA, tokenB, amountA, amountB, feeRate, slippage, network }) => {
     try {
       const config = getNetworkConfig(network);
-      const wallet = getWalletByPrivateKey();
-      const result = await addLiquidity(config, wallet, { tokenA, tokenB, amountA, amountB, feeRate, slippage });
+      const signer = createSignerFromEnv();
+      const result = await addLiquidity(config, signer, { tokenA, tokenB, amountA, amountB, feeRate, slippage });
       return ok(result);
     } catch (err) {
       return fail(err);
@@ -210,7 +210,7 @@ server.registerTool(
   'awaken_remove_liquidity',
   {
     description:
-      'Remove liquidity from an Awaken DEX trading pair. REQUIRES AELF_PRIVATE_KEY env var. Returns the underlying tokens to your wallet.',
+      'Remove liquidity from an Awaken DEX trading pair. Requires wallet env vars (EOA or CA). Returns the underlying tokens to your wallet.',
     inputSchema: {
       tokenA: z.string().describe('Token A symbol'),
       tokenB: z.string().describe('Token B symbol'),
@@ -222,8 +222,8 @@ server.registerTool(
   async ({ tokenA, tokenB, lpAmount, feeRate, network }) => {
     try {
       const config = getNetworkConfig(network);
-      const wallet = getWalletByPrivateKey();
-      const result = await removeLiquidity(config, wallet, { tokenA, tokenB, lpAmount, feeRate });
+      const signer = createSignerFromEnv();
+      const result = await removeLiquidity(config, signer, { tokenA, tokenB, lpAmount, feeRate });
       return ok(result);
     } catch (err) {
       return fail(err);
@@ -235,7 +235,7 @@ server.registerTool(
   'awaken_approve',
   {
     description:
-      'Approve a contract to spend your tokens. REQUIRES AELF_PRIVATE_KEY env var. Use this before swap/liquidity if you need manual control over approvals.',
+      'Approve a contract to spend your tokens. Requires wallet env vars (EOA or CA). Use this before swap/liquidity if you need manual control over approvals.',
     inputSchema: {
       symbol: z.string().describe('Token to approve (e.g. ELF)'),
       spender: z.string().describe('Contract address to approve'),
@@ -246,8 +246,8 @@ server.registerTool(
   async ({ symbol, spender, amount, network }) => {
     try {
       const config = getNetworkConfig(network);
-      const wallet = getWalletByPrivateKey();
-      const result = await approveTokenSpending(config, wallet, { symbol, spender, amount });
+      const signer = createSignerFromEnv();
+      const result = await approveTokenSpending(config, signer, { symbol, spender, amount });
       return ok(result);
     } catch (err) {
       return fail(err);
