@@ -51,11 +51,11 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/AwakenFinance/awaken-agent-skills.git"
+    "url": "git+https://github.com/Awaken-Finance/awaken-agent-skills.git"
   },
-  "homepage": "https://github.com/AwakenFinance/awaken-agent-skills#readme",
+  "homepage": "https://github.com/Awaken-Finance/awaken-agent-skills#readme",
   "bugs": {
-    "url": "https://github.com/AwakenFinance/awaken-agent-skills/issues"
+    "url": "https://github.com/Awaken-Finance/awaken-agent-skills/issues"
   },
   "publishConfig": {
     "access": "public"
