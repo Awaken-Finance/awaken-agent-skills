@@ -9,7 +9,7 @@
     "./mcp": "./src/mcp/server.ts"
   },
   "bin": {
-    "awaken-setup": "./bin/setup.ts"
+    "awaken-setup": "./bin/setup.js"
   },
   "files": [
     "index.ts",
