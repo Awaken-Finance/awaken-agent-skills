@@ -1,0 +1,185 @@
+{
+  "generatedAt": "2026-02-25T13:22:16.338Z",
+  "source": "coverage/lcov.info",
+  "coverageModel": "bun-text-all-files-by-file-average",
+  "byFileAverage": {
+    "lines": {
+      "total": 8,
+      "covered": 8,
+      "pct": 86.28727931170839
+    },
+    "functions": {
+      "total": 0,
+      "covered": 0,
+      "pct": 0
+    },
+    "branches": {
+      "total": 0,
+      "covered": 0,
+      "pct": 0
+    }
+  },
+  "weighted": {
+    "lines": {
+      "total": 689,
+      "covered": 535,
+      "pct": 77.6487663280116
+    },
+    "functions": {
+      "total": 0,
+      "covered": 0,
+      "pct": 0
+    },
+    "branches": {
+      "total": 0,
+      "covered": 0,
+      "pct": 0
+    }
+  },
+  "files": [
+    {
+      "file": "cli-helpers.ts",
+      "lines": {
+        "total": 5,
+        "covered": 5,
+        "pct": 100
+      },
+      "functions": {
+        "total": 0,
+        "covered": 0,
+        "pct": 0
+      },
+      "branches": {
+        "total": 0,
+        "covered": 0,
+        "pct": 0
+      }
+    },
+    {
+      "file": "index.ts",
+      "lines": {
+        "total": 6,
+        "covered": 6,
+        "pct": 100
+      },
+      "functions": {
+        "total": 0,
+        "covered": 0,
+        "pct": 0
+      },
+      "branches": {
+        "total": 0,
+        "covered": 0,
+        "pct": 0
+      }
+    },
+    {
+      "file": "lib/aelf-client.ts",
+      "lines": {
+        "total": 120,
+        "covered": 79,
+        "pct": 65.83333333333333
+      },
+      "functions": {
+        "total": 0,
+        "covered": 0,
+        "pct": 0
+      },
+      "branches": {
+        "total": 0,
+        "covered": 0,
+        "pct": 0
+      }
+    },
+    {
+      "file": "lib/config.ts",
+      "lines": {
+        "total": 79,
+        "covered": 79,
+        "pct": 100
+      },
+      "functions": {
+        "total": 0,
+        "covered": 0,
+        "pct": 0
+      },
+      "branches": {
+        "total": 0,
+        "covered": 0,
+        "pct": 0
+      }
+    },
+    {
+      "file": "lib/types.ts",
+      "lines": {
+        "total": 9,
+        "covered": 9,
+        "pct": 100
+      },
+      "functions": {
+        "total": 0,
+        "covered": 0,
+        "pct": 0
+      },
+      "branches": {
+        "total": 0,
+        "covered": 0,
+        "pct": 0
+      }
+    },
+    {
+      "file": "src/core/kline.ts",
+      "lines": {
+        "total": 84,
+        "covered": 62,
+        "pct": 73.80952380952381
+      },
+      "functions": {
+        "total": 0,
+        "covered": 0,
+        "pct": 0
+      },
+      "branches": {
+        "total": 0,
+        "covered": 0,
+        "pct": 0
+      }
+    },
+    {
+      "file": "src/core/query.ts",
+      "lines": {
+        "total": 213,
+        "covered": 183,
+        "pct": 85.91549295774648
+      },
+      "functions": {
+        "total": 0,
+        "covered": 0,
+        "pct": 0
+      },
+      "branches": {
+        "total": 0,
+        "covered": 0,
+        "pct": 0
+      }
+    },
+    {
+      "file": "src/core/trade.ts",
+      "lines": {
+        "total": 173,
+        "covered": 112,
+        "pct": 64.73988439306359
+      },
+      "functions": {
+        "total": 0,
+        "covered": 0,
+        "pct": 0
+      },
+      "branches": {
+        "total": 0,
+        "covered": 0,
+        "pct": 0
+      }
+    }
+  ]
+}
