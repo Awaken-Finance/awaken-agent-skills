@@ -4,3 +4,7 @@ dist/
 bun.lock
 *.log
 .DS_Store
+
+coverage/
+
+badge/
