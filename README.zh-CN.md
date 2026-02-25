@@ -1,6 +1,8 @@
 # Awaken Agent Kit
 
 [![English](https://img.shields.io/badge/docs-English-blue)](./README.md)
+[![Unit Tests](https://github.com/Awaken-Finance/awaken-agent-skills/actions/workflows/publish.yml/badge.svg)](https://github.com/Awaken-Finance/awaken-agent-skills/actions/workflows/publish.yml)
+[![Coverage](https://codecov.io/gh/Awaken-Finance/awaken-agent-skills/graph/badge.svg)](https://codecov.io/gh/Awaken-Finance/awaken-agent-skills)
 
 > 面向 [Awaken DEX](https://awaken.finance)（[aelf](https://aelf.com) 区块链）的 AI Agent 工具包 —— 代币兑换、流动性管理、K 线数据获取。
 
