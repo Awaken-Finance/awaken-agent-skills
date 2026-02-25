@@ -36,6 +36,7 @@
     "test:unit:main:coverage": "bun run test:unit:main --coverage --coverage-reporter=text --coverage-reporter=lcov --coverage-dir=coverage/main",
     "test:unit:mocked:coverage": "bun run test:unit:mocked --coverage --coverage-reporter=text --coverage-reporter=lcov --coverage-dir=coverage/mocked",
     "coverage:merge:unit": "mkdir -p coverage && cat coverage/main/lcov.info coverage/mocked/lcov.info > coverage/lcov.info",
+    "coverage:badge": "bun run bin/generate-coverage-badge.ts",
     "test:unit:coverage": "bun run test:unit:main:coverage && bun run test:unit:mocked:coverage && bun run coverage:merge:unit",
     "test:integration": "bun test __tests__/integration/",
     "test:e2e": "bun test __tests__/e2e/"

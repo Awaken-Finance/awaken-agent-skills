@@ -2,7 +2,7 @@
 
 [![中文文档](https://img.shields.io/badge/docs-%E4%B8%AD%E6%96%87%E6%96%87%E6%A1%A3-blue)](./README.zh-CN.md)
 [![Unit Tests](https://github.com/Awaken-Finance/awaken-agent-skills/actions/workflows/test.yml/badge.svg)](https://github.com/Awaken-Finance/awaken-agent-skills/actions/workflows/test.yml)
-[![Coverage](https://codecov.io/gh/Awaken-Finance/awaken-agent-skills/graph/badge.svg)](https://codecov.io/gh/Awaken-Finance/awaken-agent-skills)
+[![Coverage](https://img.shields.io/endpoint?url=https://Awaken-Finance.github.io/awaken-agent-skills/coverage.json)](https://Awaken-Finance.github.io/awaken-agent-skills/coverage.json)
 
 > AI Agent toolkit for [Awaken DEX](https://awaken.finance) on the [aelf](https://aelf.com) blockchain — swap tokens, manage liquidity, and fetch K-line data.
 
