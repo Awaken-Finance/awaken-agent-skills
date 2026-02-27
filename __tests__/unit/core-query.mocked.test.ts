@@ -178,6 +178,50 @@ describe('core/query mocked', () => {
     ).rejects.toThrow('No trade pair found');
   });
 
+  test('getPair returns first pair when list exists', async () => {
+    state.axiosGetImpl = async () => ({
+      data: {
+        data: {
+          items: [
+            { id: 'pair-1', price: 2.35 },
+            { id: 'pair-2', price: 2.5 },
+          ],
+        },
+      },
+    });
+
+    const pair = await queryCore.getPair(config, {
+      token0: 'ELF',
+      token1: 'USDT',
+      feeRate: '0.3',
+    });
+
+    expect(pair.id).toBe('pair-1');
+    expect(state.axiosCalls[0]?.params?.FeeRate).toBe('0.003');
+  });
+
+  test('getTokenBalance and getTokenAllowance normalize decimals', async () => {
+    state.getTokenInfoImpl = async (_rpcUrl: string, _tokenContract: string, symbol: string) => ({
+      symbol,
+      decimals: symbol === 'USDT' ? 6 : 8,
+    });
+    state.getBalanceImpl = async () => '1234500';
+    state.getAllowanceImpl = async () => '4200000';
+
+    const balance = await queryCore.getTokenBalance(config, {
+      address: 'ELF_user',
+      symbol: 'USDT',
+    });
+    const allowance = await queryCore.getTokenAllowance(config, {
+      owner: 'ELF_owner',
+      spender: 'ELF_spender',
+      symbol: 'USDT',
+    });
+
+    expect(balance.balance).toBe('1.2345');
+    expect(allowance.allowance).toBe('4.2');
+  });
+
   test('getLiquidityPositions supports filters and portfolio fallback', async () => {
     state.axiosGetImpl = async (url: string, options?: any) => {
       if (url.endsWith('/api/app/liquidity/user-liquidity')) {
@@ -246,5 +290,81 @@ describe('core/query mocked', () => {
       pairPrice: 2.5,
     });
     expect(result.portfolioDetail).toBeUndefined();
+  });
+
+  test('getLiquidityPositions keeps portfolio detail and skips on-chain call without factory', async () => {
+    let callViewCount = 0;
+    state.callViewMethodImpl = async () => {
+      callViewCount += 1;
+      return { amount: '999' };
+    };
+    state.axiosGetImpl = async (url: string) => {
+      if (url.endsWith('/api/app/liquidity/user-liquidity')) {
+        return {
+          data: {
+            data: {
+              items: [
+                {
+                  lpTokenAmount: '88',
+                  token0Amount: '1',
+                  token1Amount: '2',
+                  assetUSD: 3,
+                  tradePair: {
+                    id: 'pair-unknown-factory',
+                    feeRate: '0.001', // 0.1%, not in factory map
+                    token0: { symbol: 'BTC', decimals: 8 },
+                    token1: { symbol: 'USDT', decimals: 6 },
+                  },
+                },
+              ],
+            },
+          },
+        };
+      }
+      if (url.endsWith('/api/app/trade-pairs')) {
+        return { data: { data: { items: [{ price: 10.5 }] } } };
+      }
+      if (url.endsWith('/api/app/liquidity/user-positions')) {
+        return {
+          data: {
+            data: {
+              items: [
+                {
+                  lpTokenAmount: '88',
+                  lpTokenPercent: '0.2',
+                  estimatedAPR: 12.5,
+                  dynamicAPR: 13.1,
+                  impermanentLossInUSD: 1.2,
+                  tradePairInfo: {
+                    id: 'pair-unknown-factory',
+                    feeRate: '0.001',
+                    token0: { symbol: 'BTC' },
+                    token1: { symbol: 'USDT' },
+                  },
+                  position: {
+                    valueInUsd: 3,
+                    token0Amount: '1',
+                    token0AmountInUsd: 1.5,
+                    token1Amount: '2',
+                    token1AmountInUsd: 1.5,
+                  },
+                  fee: { valueInUsd: 0.1 },
+                },
+              ],
+            },
+          },
+        };
+      }
+      throw new Error(`unexpected url: ${url}`);
+    };
+
+    const result = await queryCore.getLiquidityPositions(config, {
+      address: 'ELF_user',
+    });
+
+    expect(result.totalPositions).toBe(1);
+    expect(result.positions[0]?.lpTokenAmountOnChain).toBe('0');
+    expect(result.portfolioDetail?.length).toBe(1);
+    expect(callViewCount).toBe(0);
   });
 });
