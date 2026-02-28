@@ -20,9 +20,9 @@
   },
   "weighted": {
     "lines": {
-      "total": 687,
-      "covered": 612,
-      "pct": 89.08296943231441
+      "total": 688,
+      "covered": 613,
+      "pct": 89.09883720930233
     },
     "functions": {
       "total": 0,
@@ -165,8 +165,8 @@
     {
       "file": "src/core/trade.ts",
       "lines": {
-        "total": 173,
-        "covered": 173,
+        "total": 174,
+        "covered": 174,
         "pct": 100
       },
       "functions": {
