@@ -33,6 +33,9 @@ import type {
   ApproveResult,
 } from '../../lib/types';
 
+const APPROVE_MULTIPLIER = 10;
+const LP_DECIMALS = 8;
+
 // ---- Helper: ensure approval ----
 
 async function ensureApproval(
@@ -46,7 +49,7 @@ async function ensureApproval(
   const currentAllowance = await getAllowance(config.rpcUrl, config.tokenContract, symbol, owner, spender);
 
   if (new BigNumber(currentAllowance).lt(requiredAmount)) {
-    const approveAmount = new BigNumber(requiredAmount).times(10).toFixed(0);
+    const approveAmount = new BigNumber(requiredAmount).times(APPROVE_MULTIPLIER).toFixed(0);
     await approveToken(config, signer, symbol, spender, approveAmount);
   }
 }
@@ -59,7 +62,7 @@ export async function executeSwap(
   params: SwapParams,
 ): Promise<SwapResult> {
   const account = signer.address;
-  const slippage = params.slippage || DEFAULT_SLIPPAGE;
+  const slippage = params.slippage ?? DEFAULT_SLIPPAGE;
 
   // 1. Get token info
   const [tokenInInfo, tokenOutInfo] = await Promise.all([
@@ -134,8 +137,8 @@ export async function addLiquidity(
   params: LiquidityAddParams,
 ): Promise<LiquidityAddResult> {
   const account = signer.address;
-  const feeRate = params.feeRate || '0.3';
-  const slippage = params.slippage || DEFAULT_SLIPPAGE;
+  const feeRate = params.feeRate ?? '0.3';
+  const slippage = params.slippage ?? DEFAULT_SLIPPAGE;
 
   const [tokenAInfo, tokenBInfo] = await Promise.all([
     getTokenInfo(config.rpcUrl, config.tokenContract, params.tokenA),
@@ -189,9 +192,7 @@ export async function removeLiquidity(
   params: LiquidityRemoveParams,
 ): Promise<LiquidityRemoveResult> {
   const account = signer.address;
-  const feeRate = params.feeRate || '0.3';
-
-  const LP_DECIMALS = 8;
+  const feeRate = params.feeRate ?? '0.3';
   const rawLiquidity = timesDecimals(params.lpAmount, LP_DECIMALS).toFixed(0);
   const routerAddress = getRouterAddress(config, feeRate);
 
@@ -211,7 +212,7 @@ export async function removeLiquidity(
     await signer.sendContractCall(config.rpcUrl, factoryAddress, 'Approve', {
       symbol: lpSymbol,
       spender: routerAddress,
-      amount: new BigNumber(rawLiquidity).times(10).toFixed(0),
+      amount: new BigNumber(rawLiquidity).times(APPROVE_MULTIPLIER).toFixed(0),
     });
   }
 
