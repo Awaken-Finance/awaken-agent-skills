@@ -21,6 +21,13 @@ export { getNetworkConfig, getRouterAddress, DEFAULT_SLIPPAGE } from './lib/conf
 
 // ---- aelf Client Utilities ----
 export { getWalletByPrivateKey, getTokenInfo, timesDecimals, divDecimals } from './lib/aelf-client';
+export { resolveSignerContext, SignerContextError } from './lib/signer-context';
+export {
+  readWalletContext,
+  writeWalletContext,
+  getActiveWalletProfile,
+  setActiveWalletProfile,
+} from './lib/wallet-context';
 
 // ---- Types ----
 export type {
@@ -54,3 +61,13 @@ export type {
 } from './lib/types';
 
 export { KLINE_INTERVALS } from './lib/types';
+
+export type {
+  SignerMode,
+  SignerProvider,
+  SignerContextInput,
+  WalletType,
+  WalletSource,
+  ActiveWalletProfile,
+  WalletContextFile,
+} from './lib/wallet-context';

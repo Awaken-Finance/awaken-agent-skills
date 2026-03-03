@@ -158,13 +158,13 @@ bun run awaken_query_skill.ts balance --address YOUR_ADDRESS --symbol ELF
 # Query liquidity positions
 bun run awaken_query_skill.ts liquidity --address YOUR_ADDRESS
 
-# Swap tokens (requires AELF_PRIVATE_KEY)
+# Swap tokens (requires signer via input/context/env)
 bun run awaken_trade_skill.ts swap --symbol-in ELF --symbol-out USDT --amount-in 1
 
-# Add liquidity (requires AELF_PRIVATE_KEY)
+# Add liquidity (requires signer via input/context/env)
 bun run awaken_trade_skill.ts add-liquidity --token-a ELF --token-b USDT --amount-a 10 --amount-b 5
 
-# Remove liquidity (requires AELF_PRIVATE_KEY)
+# Remove liquidity (requires signer via input/context/env)
 bun run awaken_trade_skill.ts remove-liquidity --token-a ELF --token-b USDT --lp-amount 0.5
 
 # Fetch K-line data
@@ -227,6 +227,28 @@ All commands output standardized JSON on success. Errors go to stderr with `[ERR
 ```bash
 bun run mcp
 ```
+
+### Cross-Skill signer context (recommended)
+
+Write tools (`swap`, `addLiquidity`, `removeLiquidity`, `approve`) now resolve signer in this order:
+
+1. explicit signer input (`signer.privateKey` or CA tuple)
+2. active wallet context from `~/.portkey/skill-wallet/context.v1.json`
+3. env fallback (`AELF_PRIVATE_KEY` or `PORTKEY_*`)
+
+`signer` input (optional) supports:
+
+```json
+{
+  "signerMode": "auto",
+  "walletType": "EOA",
+  "address": "ELF_...",
+  "password": "optional-password",
+  "privateKey": "optional-explicit-private-key"
+}
+```
+
+`signerMode=daemon` is reserved and currently returns `SIGNER_DAEMON_NOT_IMPLEMENTED`.
 
 ### SDK (TypeScript / JavaScript)
 
@@ -306,6 +328,9 @@ bun run test:e2e
 | `PORTKEY_PRIVATE_KEY` | For trades (CA) | — | Portkey Manager private key |
 | `PORTKEY_CA_HASH` | For trades (CA) | — | Portkey CA hash |
 | `PORTKEY_CA_ADDRESS` | For trades (CA) | — | Portkey CA address |
+| `PORTKEY_WALLET_PASSWORD` | No | — | Optional password cache for EOA wallet context decryption |
+| `PORTKEY_CA_KEYSTORE_PASSWORD` | No | — | Optional password cache for CA keystore context decryption |
+| `PORTKEY_SKILL_WALLET_CONTEXT_PATH` | No | `~/.portkey/skill-wallet/context.v1.json` | Override active wallet context path |
 | `AWAKEN_NETWORK` | No | `mainnet` | `mainnet` or `testnet` |
 | `AWAKEN_RPC_URL` | No | Per network | Override RPC endpoint |
 | `AWAKEN_API_BASE_URL` | No | Per network | Override API endpoint |

@@ -158,13 +158,13 @@ bun run awaken_query_skill.ts balance --address YOUR_ADDRESS --symbol ELF
 # 查询流动性持仓
 bun run awaken_query_skill.ts liquidity --address YOUR_ADDRESS
 
-# 代币兑换（需要 AELF_PRIVATE_KEY）
+# 代币兑换（需要 signer：输入/上下文/env 任一可用）
 bun run awaken_trade_skill.ts swap --symbol-in ELF --symbol-out USDT --amount-in 1
 
-# 添加流动性（需要 AELF_PRIVATE_KEY）
+# 添加流动性（需要 signer：输入/上下文/env 任一可用）
 bun run awaken_trade_skill.ts add-liquidity --token-a ELF --token-b USDT --amount-a 10 --amount-b 5
 
-# 移除流动性（需要 AELF_PRIVATE_KEY）
+# 移除流动性（需要 signer：输入/上下文/env 任一可用）
 bun run awaken_trade_skill.ts remove-liquidity --token-a ELF --token-b USDT --lp-amount 0.5
 
 # 获取 K 线数据
@@ -206,6 +206,28 @@ bun run awaken_kline_skill.ts intervals
 ```bash
 bun run mcp
 ```
+
+### 跨 Skill 签名上下文（推荐）
+
+写操作工具（`swap`、`addLiquidity`、`removeLiquidity`、`approve`）统一按以下顺序解析 signer：
+
+1. 显式输入（`signer.privateKey` 或 CA 三元组）
+2. Active wallet context（`~/.portkey/skill-wallet/context.v1.json`）
+3. 环境变量回退（`AELF_PRIVATE_KEY` 或 `PORTKEY_*`）
+
+可选 `signer` 入参示例：
+
+```json
+{
+  "signerMode": "auto",
+  "walletType": "EOA",
+  "address": "ELF_...",
+  "password": "可选密码",
+  "privateKey": "可选显式私钥"
+}
+```
+
+`signerMode=daemon` 已预埋接口，但本轮仍返回 `SIGNER_DAEMON_NOT_IMPLEMENTED`。
 
 ### SDK（TypeScript / JavaScript）
 
@@ -282,6 +304,12 @@ bun run test:e2e
 | 变量 | 是否必填 | 默认值 | 说明 |
 |------|---------|--------|------|
 | `AELF_PRIVATE_KEY` | 交易时必填 | — | aelf 钱包私钥 |
+| `PORTKEY_PRIVATE_KEY` | CA 交易时可选 | — | Portkey Manager 私钥 |
+| `PORTKEY_CA_HASH` | CA 交易时可选 | — | Portkey CA Hash |
+| `PORTKEY_CA_ADDRESS` | CA 交易时可选 | — | Portkey CA Address |
+| `PORTKEY_WALLET_PASSWORD` | 否 | — | EOA wallet context 解密密码缓存（可选） |
+| `PORTKEY_CA_KEYSTORE_PASSWORD` | 否 | — | CA keystore context 解密密码缓存（可选） |
+| `PORTKEY_SKILL_WALLET_CONTEXT_PATH` | 否 | `~/.portkey/skill-wallet/context.v1.json` | 覆盖 active context 文件路径 |
 | `AWAKEN_NETWORK` | 否 | `mainnet` | `mainnet` 或 `testnet` |
 | `AWAKEN_RPC_URL` | 否 | 按网络 | 覆盖 RPC 地址 |
 | `AWAKEN_API_BASE_URL` | 否 | 按网络 | 覆盖 API 地址 |

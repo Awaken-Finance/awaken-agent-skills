@@ -12,8 +12,8 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { z } from 'zod';
 
-import { createSignerFromEnv } from '@portkey/aelf-signer';
 import { getNetworkConfig } from '../../lib/config';
+import { resolveSignerContext } from '../../lib/signer-context';
 import { getQuote, getPair, getTokenBalance, getTokenAllowance, getLiquidityPositions } from '../core/query';
 import { executeSwap, addLiquidity, removeLiquidity, approveTokenSpending } from '../core/trade';
 import { fetchKline, getKlineIntervals } from '../core/kline';
@@ -31,6 +31,22 @@ function fail(err: any) {
   const message = err?.message || String(err);
   return { content: [{ type: 'text' as const, text: `[ERROR] ${message}` }], isError: true as const };
 }
+
+const signerInputSchema = z
+  .object({
+    signerMode: z.enum(['auto', 'explicit', 'context', 'env', 'daemon']).optional(),
+    walletType: z.enum(['EOA', 'CA']).optional(),
+    address: z.string().optional(),
+    password: z.string().optional(),
+    privateKey: z.string().optional(),
+    caHash: z.string().optional(),
+    caAddress: z.string().optional(),
+    network: z.enum(['mainnet', 'testnet']).optional(),
+  })
+  .optional()
+  .describe(
+    'Optional signer context input. signerMode=auto tries explicit → active context → env. daemon is reserved for future release.',
+  );
 
 // ============================================================
 // Query Tools (read-only, no private key required)
@@ -158,20 +174,24 @@ server.registerTool(
   'awaken_swap',
   {
     description:
-      'Execute a token swap on Awaken DEX. Requires wallet env vars (AELF_PRIVATE_KEY for EOA, or PORTKEY_PRIVATE_KEY + PORTKEY_CA_HASH + PORTKEY_CA_ADDRESS for CA). Sends a real on-chain transaction. Auto-queries the best route, approves if needed, and executes the swap. Returns transactionId, estimated amounts, explorer URL.',
+      'Execute a token swap on Awaken DEX. Signer resolution order: explicit signer input, active wallet context, then env fallback. Sends a real on-chain transaction. Auto-queries route, approves if needed, then executes swap.',
     inputSchema: {
       symbolIn: z.string().describe('Token to sell (e.g. ELF)'),
       symbolOut: z.string().describe('Token to buy (e.g. USDT)'),
       amountIn: z.string().describe('Human-readable amount to sell (e.g. "1.5")'),
       slippage: z.string().default('0.005').describe('Slippage tolerance (0.005 = 0.5%)'),
       network: z.enum(['mainnet', 'testnet']).default('mainnet'),
+      signer: signerInputSchema,
     },
   },
-  async ({ symbolIn, symbolOut, amountIn, slippage, network }) => {
+  async ({ symbolIn, symbolOut, amountIn, slippage, network, signer }) => {
     try {
       const config = getNetworkConfig(network);
-      const signer = createSignerFromEnv();
-      const result = await executeSwap(config, signer, { symbolIn, symbolOut, amountIn, slippage });
+      const resolved = resolveSignerContext({
+        signerMode: 'auto',
+        ...signer,
+      });
+      const result = await executeSwap(config, resolved.signer, { symbolIn, symbolOut, amountIn, slippage });
       return ok(result);
     } catch (err) {
       return fail(err);
@@ -183,7 +203,7 @@ server.registerTool(
   'awaken_add_liquidity',
   {
     description:
-      'Add liquidity to an Awaken DEX trading pair. Requires wallet env vars (EOA or CA). Auto-approves both tokens before adding.',
+      'Add liquidity to an Awaken DEX trading pair. Signer resolution order: explicit signer input, active wallet context, then env fallback.',
     inputSchema: {
       tokenA: z.string().describe('Token A symbol (e.g. ELF)'),
       tokenB: z.string().describe('Token B symbol (e.g. USDT)'),
@@ -192,13 +212,17 @@ server.registerTool(
       feeRate: z.string().default('0.3').describe('Pool fee tier (0.05, 0.1, 0.3, 3, or 5)'),
       slippage: z.string().default('0.005').describe('Slippage tolerance'),
       network: z.enum(['mainnet', 'testnet']).default('mainnet'),
+      signer: signerInputSchema,
     },
   },
-  async ({ tokenA, tokenB, amountA, amountB, feeRate, slippage, network }) => {
+  async ({ tokenA, tokenB, amountA, amountB, feeRate, slippage, network, signer }) => {
     try {
       const config = getNetworkConfig(network);
-      const signer = createSignerFromEnv();
-      const result = await addLiquidity(config, signer, { tokenA, tokenB, amountA, amountB, feeRate, slippage });
+      const resolved = resolveSignerContext({
+        signerMode: 'auto',
+        ...signer,
+      });
+      const result = await addLiquidity(config, resolved.signer, { tokenA, tokenB, amountA, amountB, feeRate, slippage });
       return ok(result);
     } catch (err) {
       return fail(err);
@@ -210,20 +234,24 @@ server.registerTool(
   'awaken_remove_liquidity',
   {
     description:
-      'Remove liquidity from an Awaken DEX trading pair. Requires wallet env vars (EOA or CA). Returns the underlying tokens to your wallet.',
+      'Remove liquidity from an Awaken DEX trading pair. Signer resolution order: explicit signer input, active wallet context, then env fallback.',
     inputSchema: {
       tokenA: z.string().describe('Token A symbol'),
       tokenB: z.string().describe('Token B symbol'),
       lpAmount: z.string().describe('LP token amount to burn (human-readable)'),
       feeRate: z.string().default('0.3').describe('Pool fee tier'),
       network: z.enum(['mainnet', 'testnet']).default('mainnet'),
+      signer: signerInputSchema,
     },
   },
-  async ({ tokenA, tokenB, lpAmount, feeRate, network }) => {
+  async ({ tokenA, tokenB, lpAmount, feeRate, network, signer }) => {
     try {
       const config = getNetworkConfig(network);
-      const signer = createSignerFromEnv();
-      const result = await removeLiquidity(config, signer, { tokenA, tokenB, lpAmount, feeRate });
+      const resolved = resolveSignerContext({
+        signerMode: 'auto',
+        ...signer,
+      });
+      const result = await removeLiquidity(config, resolved.signer, { tokenA, tokenB, lpAmount, feeRate });
       return ok(result);
     } catch (err) {
       return fail(err);
@@ -235,19 +263,23 @@ server.registerTool(
   'awaken_approve',
   {
     description:
-      'Approve a contract to spend your tokens. Requires wallet env vars (EOA or CA). Use this before swap/liquidity if you need manual control over approvals.',
+      'Approve a contract to spend your tokens. Signer resolution order: explicit signer input, active wallet context, then env fallback.',
     inputSchema: {
       symbol: z.string().describe('Token to approve (e.g. ELF)'),
       spender: z.string().describe('Contract address to approve'),
       amount: z.string().describe('Human-readable amount to approve'),
       network: z.enum(['mainnet', 'testnet']).default('mainnet'),
+      signer: signerInputSchema,
     },
   },
-  async ({ symbol, spender, amount, network }) => {
+  async ({ symbol, spender, amount, network, signer }) => {
     try {
       const config = getNetworkConfig(network);
-      const signer = createSignerFromEnv();
-      const result = await approveTokenSpending(config, signer, { symbol, spender, amount });
+      const resolved = resolveSignerContext({
+        signerMode: 'auto',
+        ...signer,
+      });
+      const result = await approveTokenSpending(config, resolved.signer, { symbol, spender, amount });
       return ok(result);
     } catch (err) {
       return fail(err);
