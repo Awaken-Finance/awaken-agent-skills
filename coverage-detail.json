@@ -3,9 +3,9 @@
   "coverageModel": "bun-text-all-files-by-file-average",
   "byFileAverage": {
     "lines": {
-      "total": 8,
-      "covered": 8,
-      "pct": 91.74445666892349
+      "total": 12,
+      "covered": 12,
+      "pct": 93.79083707381494
     },
     "functions": {
       "total": 0,
@@ -20,9 +20,9 @@
   },
   "weighted": {
     "lines": {
-      "total": 688,
-      "covered": 613,
-      "pct": 89.09883720930233
+      "total": 1133,
+      "covered": 1042,
+      "pct": 91.96822594880847
     },
     "functions": {
       "total": 0,
@@ -57,8 +57,8 @@
     {
       "file": "index.ts",
       "lines": {
-        "total": 6,
-        "covered": 6,
+        "total": 8,
+        "covered": 8,
         "pct": 100
       },
       "functions": {
@@ -109,11 +109,65 @@
       }
     },
     {
+      "file": "lib/signer-context.ts",
+      "lines": {
+        "total": 202,
+        "covered": 202,
+        "pct": 100
+      },
+      "functions": {
+        "total": 0,
+        "covered": 0,
+        "pct": 0
+      },
+      "branches": {
+        "total": 0,
+        "covered": 0,
+        "pct": 0
+      }
+    },
+    {
+      "file": "lib/signer-error-codes.ts",
+      "lines": {
+        "total": 9,
+        "covered": 9,
+        "pct": 100
+      },
+      "functions": {
+        "total": 0,
+        "covered": 0,
+        "pct": 0
+      },
+      "branches": {
+        "total": 0,
+        "covered": 0,
+        "pct": 0
+      }
+    },
+    {
       "file": "lib/types.ts",
       "lines": {
         "total": 9,
         "covered": 9,
         "pct": 100
+      },
+      "functions": {
+        "total": 0,
+        "covered": 0,
+        "pct": 0
+      },
+      "branches": {
+        "total": 0,
+        "covered": 0,
+        "pct": 0
+      }
+    },
+    {
+      "file": "lib/wallet-context.ts",
+      "lines": {
+        "total": 189,
+        "covered": 173,
+        "pct": 91.53439153439153
       },
       "functions": {
         "total": 0,
@@ -167,6 +221,24 @@
       "lines": {
         "total": 174,
         "covered": 174,
+        "pct": 100
+      },
+      "functions": {
+        "total": 0,
+        "covered": 0,
+        "pct": 0
+      },
+      "branches": {
+        "total": 0,
+        "covered": 0,
+        "pct": 0
+      }
+    },
+    {
+      "file": "src/mcp/error.ts",
+      "lines": {
+        "total": 43,
+        "covered": 43,
         "pct": 100
       },
       "functions": {
