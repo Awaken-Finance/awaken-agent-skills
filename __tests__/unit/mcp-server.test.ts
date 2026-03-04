@@ -12,9 +12,39 @@ describe('MCP Server helpers', () => {
   function ok(data: any) {
     return { content: [{ type: 'text' as const, text: JSON.stringify(data, null, 2) }] };
   }
-  function fail(err: any) {
-    const message = err?.message || String(err);
-    return { content: [{ type: 'text' as const, text: `[ERROR] ${message}` }], isError: true as const };
+  function toMcpError(err: unknown) {
+    const fallback = {
+      code: 'UNKNOWN_ERROR',
+      message: String(err),
+      details: undefined,
+      traceId: undefined,
+    };
+    if (!err || typeof err !== 'object') return fallback;
+    const record = err as Record<string, unknown>;
+    const rawMessage = typeof record.message === 'string' ? record.message : fallback.message;
+    let code = typeof record.code === 'string' ? record.code : '';
+    let message = rawMessage;
+    const prefixed = rawMessage.match(/^([A-Z0-9_]+):\s*(.*)$/);
+    if (!code && prefixed) {
+      code = prefixed[1];
+      message = prefixed[2] || prefixed[1];
+    }
+    return {
+      code: code || 'UNKNOWN_ERROR',
+      message,
+      details: record.details,
+      traceId: typeof record.traceId === 'string' ? record.traceId : undefined,
+    };
+  }
+  function fail(err: unknown) {
+    const parsed = toMcpError(err);
+    return {
+      content: [
+        { type: 'text' as const, text: `[ERROR] ${parsed.code}: ${parsed.message}` },
+        { type: 'text' as const, text: JSON.stringify({ error: parsed }, null, 2) },
+      ],
+      isError: true as const,
+    };
   }
 
   test('ok() wraps data as MCP text content', () => {
@@ -39,25 +69,26 @@ describe('MCP Server helpers', () => {
   test('fail() wraps Error with isError=true', () => {
     const result = fail(new Error('something broke'));
     expect(result.isError).toBe(true);
-    expect(result.content[0].text).toBe('[ERROR] something broke');
+    expect(result.content[0].text).toBe('[ERROR] UNKNOWN_ERROR: something broke');
+    expect(result.content.length).toBe(2);
   });
 
   test('fail() handles string error', () => {
     const result = fail('raw string error');
     expect(result.isError).toBe(true);
-    expect(result.content[0].text).toBe('[ERROR] raw string error');
+    expect(result.content[0].text).toBe('[ERROR] UNKNOWN_ERROR: raw string error');
   });
 
   test('fail() handles undefined error', () => {
     const result = fail(undefined);
     expect(result.isError).toBe(true);
-    expect(result.content[0].text).toBe('[ERROR] undefined');
+    expect(result.content[0].text).toBe('[ERROR] UNKNOWN_ERROR: undefined');
   });
 
   test('fail() handles error object without message', () => {
     const result = fail({ code: 500 });
     expect(result.isError).toBe(true);
-    expect(result.content[0].text).toBe('[ERROR] [object Object]');
+    expect(result.content[0].text).toBe('[ERROR] UNKNOWN_ERROR: [object Object]');
   });
 });
 
