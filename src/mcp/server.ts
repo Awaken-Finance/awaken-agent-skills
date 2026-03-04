@@ -17,6 +17,7 @@ import { resolveSignerContext } from '../../lib/signer-context';
 import { getQuote, getPair, getTokenBalance, getTokenAllowance, getLiquidityPositions } from '../core/query';
 import { executeSwap, addLiquidity, removeLiquidity, approveTokenSpending } from '../core/trade';
 import { fetchKline, getKlineIntervals } from '../core/kline';
+import { fail } from './error';
 
 const server = new McpServer({
   name: 'awaken-agent-kit',
@@ -28,45 +29,10 @@ function ok(data: any) {
   return { content: [{ type: 'text' as const, text: JSON.stringify(data, null, 2) }] };
 }
 
-function toMcpError(err: unknown): {
-  code: string;
-  message: string;
-  details?: unknown;
-  traceId?: string;
-} {
-  const fallback = {
-    code: 'UNKNOWN_ERROR',
-    message: String(err),
-    details: undefined,
-    traceId: undefined,
-  };
-  if (!err || typeof err !== 'object') return fallback;
-  const record = err as Record<string, unknown>;
-  const rawMessage = typeof record.message === 'string' ? record.message : fallback.message;
-  let code = typeof record.code === 'string' ? record.code : '';
-  let message = rawMessage;
-  const prefixed = rawMessage.match(/^([A-Z0-9_]+):\s*(.*)$/);
-  if (!code && prefixed) {
-    code = prefixed[1];
-    message = prefixed[2] || prefixed[1];
-  }
-  return {
-    code: code || 'UNKNOWN_ERROR',
-    message,
-    details: record.details,
-    traceId: typeof record.traceId === 'string' ? record.traceId : undefined,
-  };
-}
+type McpToolHandler = (input: Record<string, any>) => Promise<any> | any;
 
-function fail(err: unknown) {
-  const parsed = toMcpError(err);
-  return {
-    content: [
-      { type: 'text' as const, text: `[ERROR] ${parsed.code}: ${parsed.message}` },
-      { type: 'text' as const, text: JSON.stringify({ error: parsed }, null, 2) },
-    ],
-    isError: true as const,
-  };
+function registerTool(name: string, definition: any, handler: McpToolHandler) {
+  return (server.registerTool as any)(name, definition, handler);
 }
 
 const signerInputSchema = z
@@ -89,7 +55,7 @@ const signerInputSchema = z
 // Query Tools (read-only, no private key required)
 // ============================================================
 
-server.registerTool(
+registerTool(
   'awaken_quote',
   {
     description:
@@ -113,7 +79,7 @@ server.registerTool(
   },
 );
 
-server.registerTool(
+registerTool(
   'awaken_pair',
   {
     description:
@@ -136,7 +102,7 @@ server.registerTool(
   },
 );
 
-server.registerTool(
+registerTool(
   'awaken_balance',
   {
     description: 'Query the token balance of an aelf address on-chain. Returns human-readable balance.',
@@ -157,7 +123,7 @@ server.registerTool(
   },
 );
 
-server.registerTool(
+registerTool(
   'awaken_allowance',
   {
     description:
@@ -180,7 +146,7 @@ server.registerTool(
   },
 );
 
-server.registerTool(
+registerTool(
   'awaken_liquidity',
   {
     description:
@@ -207,7 +173,7 @@ server.registerTool(
 // Trade Tools (require AELF_PRIVATE_KEY or PORTKEY_PRIVATE_KEY + CA env vars)
 // ============================================================
 
-server.registerTool(
+registerTool(
   'awaken_swap',
   {
     description:
@@ -236,7 +202,7 @@ server.registerTool(
   },
 );
 
-server.registerTool(
+registerTool(
   'awaken_add_liquidity',
   {
     description:
@@ -267,7 +233,7 @@ server.registerTool(
   },
 );
 
-server.registerTool(
+registerTool(
   'awaken_remove_liquidity',
   {
     description:
@@ -296,7 +262,7 @@ server.registerTool(
   },
 );
 
-server.registerTool(
+registerTool(
   'awaken_approve',
   {
     description:
@@ -328,7 +294,7 @@ server.registerTool(
 // K-Line Tools
 // ============================================================
 
-server.registerTool(
+registerTool(
   'awaken_kline_fetch',
   {
     description:
@@ -353,7 +319,7 @@ server.registerTool(
   },
 );
 
-server.registerTool(
+registerTool(
   'awaken_kline_intervals',
   {
     description: 'List all supported K-line time intervals with their period in seconds.',

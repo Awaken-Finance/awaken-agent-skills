@@ -61,13 +61,13 @@ mock.module('axios', () => ({
 }));
 
 mock.module('../../lib/aelf-client', () => ({
-  callViewMethod: (...args: any[]) => state.callViewMethodImpl(...args),
-  getTokenInfo: (...args: any[]) => state.getTokenInfoImpl(...args),
-  getAllowance: (...args: any[]) => state.getAllowanceImpl(...args),
+  callViewMethod: (...args: any[]) => (state.callViewMethodImpl as any)(...args),
+  getTokenInfo: (...args: any[]) => (state.getTokenInfoImpl as any)(...args),
+  getAllowance: (...args: any[]) => (state.getAllowanceImpl as any)(...args),
   approveToken: async (...args: any[]) => {
     const [, , symbol, spender, amount] = args;
     state.approveCalls.push({ symbol, spender, amount });
-    return state.approveTokenImpl(...args);
+    return (state.approveTokenImpl as any)(...args);
   },
   timesDecimals: (value: string | number, decimals: number) =>
     new BigNumber(value).times(new BigNumber(10).pow(decimals)),

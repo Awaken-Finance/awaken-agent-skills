@@ -2,7 +2,8 @@
 // Unit Test: MCP Server — tool registration, ok/fail helpers
 // ============================================================
 
-import { describe, test, expect, mock, beforeEach } from 'bun:test';
+import { describe, test, expect } from 'bun:test';
+import { fail, toMcpError } from '../../src/mcp/error';
 
 // We test the MCP module's helper functions and tool registration
 // by dynamically importing the server module and intercepting McpServer.
@@ -11,40 +12,6 @@ describe('MCP Server helpers', () => {
   // Replicate the ok/fail helpers from server.ts to unit-test them in isolation
   function ok(data: any) {
     return { content: [{ type: 'text' as const, text: JSON.stringify(data, null, 2) }] };
-  }
-  function toMcpError(err: unknown) {
-    const fallback = {
-      code: 'UNKNOWN_ERROR',
-      message: String(err),
-      details: undefined,
-      traceId: undefined,
-    };
-    if (!err || typeof err !== 'object') return fallback;
-    const record = err as Record<string, unknown>;
-    const rawMessage = typeof record.message === 'string' ? record.message : fallback.message;
-    let code = typeof record.code === 'string' ? record.code : '';
-    let message = rawMessage;
-    const prefixed = rawMessage.match(/^([A-Z0-9_]+):\s*(.*)$/);
-    if (!code && prefixed) {
-      code = prefixed[1];
-      message = prefixed[2] || prefixed[1];
-    }
-    return {
-      code: code || 'UNKNOWN_ERROR',
-      message,
-      details: record.details,
-      traceId: typeof record.traceId === 'string' ? record.traceId : undefined,
-    };
-  }
-  function fail(err: unknown) {
-    const parsed = toMcpError(err);
-    return {
-      content: [
-        { type: 'text' as const, text: `[ERROR] ${parsed.code}: ${parsed.message}` },
-        { type: 'text' as const, text: JSON.stringify({ error: parsed }, null, 2) },
-      ],
-      isError: true as const,
-    };
   }
 
   test('ok() wraps data as MCP text content', () => {
@@ -71,6 +38,18 @@ describe('MCP Server helpers', () => {
     expect(result.isError).toBe(true);
     expect(result.content[0].text).toBe('[ERROR] UNKNOWN_ERROR: something broke');
     expect(result.content.length).toBe(2);
+  });
+
+  test('toMcpError() only parses allowlisted message codes', () => {
+    const allowed = toMcpError(
+      new Error('SIGNER_PASSWORD_REQUIRED: missing password'),
+    );
+    expect(allowed.code).toBe('SIGNER_PASSWORD_REQUIRED');
+    expect(allowed.message).toBe('missing password');
+
+    const notAllowed = toMcpError(new Error('HTTP: connection refused'));
+    expect(notAllowed.code).toBe('UNKNOWN_ERROR');
+    expect(notAllowed.message).toBe('HTTP: connection refused');
   });
 
   test('fail() handles string error', () => {
@@ -140,7 +119,7 @@ describe('MCP Server module', () => {
     const server = new McpServer({ name: 'test', version: '0.0.1' });
 
     // Should not throw
-    server.registerTool(
+    (server as any).registerTool(
       'test_tool',
       {
         description: 'A test tool',
@@ -148,7 +127,7 @@ describe('MCP Server module', () => {
           name: z.string().describe('A name'),
         },
       },
-      async ({ name }) => {
+      async ({ name }: any) => {
         return { content: [{ type: 'text' as const, text: `hello ${name}` }] };
       },
     );

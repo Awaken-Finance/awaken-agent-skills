@@ -49,10 +49,10 @@ mock.module('axios', () => ({
 }));
 
 mock.module('../../lib/aelf-client', () => ({
-  callViewMethod: (...args: any[]) => state.callViewMethodImpl(...args),
-  getBalance: (...args: any[]) => state.getBalanceImpl(...args),
-  getAllowance: (...args: any[]) => state.getAllowanceImpl(...args),
-  getTokenInfo: (...args: any[]) => state.getTokenInfoImpl(...args),
+  callViewMethod: (...args: any[]) => (state.callViewMethodImpl as any)(...args),
+  getBalance: (...args: any[]) => (state.getBalanceImpl as any)(...args),
+  getAllowance: (...args: any[]) => (state.getAllowanceImpl as any)(...args),
+  getTokenInfo: (...args: any[]) => (state.getTokenInfoImpl as any)(...args),
   divDecimals: (value: string | number, decimals: number) =>
     new BigNumber(value).div(new BigNumber(10).pow(decimals)),
 }));
