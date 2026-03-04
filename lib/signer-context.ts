@@ -12,6 +12,7 @@ import {
   type SignerContextInput,
   type SignerProvider,
 } from './wallet-context.js';
+import { SIGNER_ERROR_CODES } from './signer-error-codes.js';
 
 export class SignerContextError extends Error {
   code: string;
@@ -42,7 +43,7 @@ function decryptEoaPrivateKey(
 ): { privateKey: string; address?: string } {
   if (!existsSync(walletFile)) {
     throw new SignerContextError(
-      'SIGNER_CONTEXT_INVALID',
+      SIGNER_ERROR_CODES.CONTEXT_INVALID,
       `active EOA wallet file not found: ${walletFile}`,
     );
   }
@@ -51,14 +52,14 @@ function decryptEoaPrivateKey(
     typeof raw.AESEncryptPrivateKey === 'string' ? raw.AESEncryptPrivateKey : '';
   if (!encrypted) {
     throw new SignerContextError(
-      'SIGNER_CONTEXT_INVALID',
+      SIGNER_ERROR_CODES.CONTEXT_INVALID,
       'active EOA wallet file missing AESEncryptPrivateKey',
     );
   }
   const privateKey = AElf.wallet.AESDecrypt(encrypted, password);
   if (!privateKey) {
     throw new SignerContextError(
-      'SIGNER_PASSWORD_REQUIRED',
+      SIGNER_ERROR_CODES.PASSWORD_REQUIRED,
       'failed to decrypt active EOA wallet: wrong password or corrupted file',
     );
   }
@@ -106,7 +107,7 @@ function resolveFromContext(input: SignerContextInput): ResolvedSignerContext {
   const profile = getActiveWalletProfile();
   if (!profile) {
     throw new SignerContextError(
-      'SIGNER_CONTEXT_NOT_FOUND',
+      SIGNER_ERROR_CODES.CONTEXT_NOT_FOUND,
       'active wallet context not found',
     );
   }
@@ -115,14 +116,14 @@ function resolveFromContext(input: SignerContextInput): ResolvedSignerContext {
     const password = input.password || process.env.PORTKEY_WALLET_PASSWORD;
     if (!password) {
       throw new SignerContextError(
-        'SIGNER_PASSWORD_REQUIRED',
+        SIGNER_ERROR_CODES.PASSWORD_REQUIRED,
         'password required for active EOA wallet (set PORTKEY_WALLET_PASSWORD or pass signer.password)',
       );
     }
     const walletFile = profile.walletFile;
     if (!walletFile) {
       throw new SignerContextError(
-        'SIGNER_CONTEXT_INVALID',
+        SIGNER_ERROR_CODES.CONTEXT_INVALID,
         'active EOA profile missing walletFile',
       );
     }
@@ -141,14 +142,14 @@ function resolveFromContext(input: SignerContextInput): ResolvedSignerContext {
   const password = input.password || process.env.PORTKEY_CA_KEYSTORE_PASSWORD;
   if (!password) {
     throw new SignerContextError(
-      'SIGNER_PASSWORD_REQUIRED',
+      SIGNER_ERROR_CODES.PASSWORD_REQUIRED,
       'password required for active CA keystore (set PORTKEY_CA_KEYSTORE_PASSWORD or pass signer.password)',
     );
   }
   const keystoreFile = profile.keystoreFile;
   if (!keystoreFile || !existsSync(keystoreFile)) {
     throw new SignerContextError(
-      'SIGNER_CONTEXT_INVALID',
+      SIGNER_ERROR_CODES.CONTEXT_INVALID,
       `active CA profile keystore not found: ${keystoreFile || '<empty>'}`,
     );
   }
@@ -156,7 +157,7 @@ function resolveFromContext(input: SignerContextInput): ResolvedSignerContext {
   const decrypted = unlockKeystore(raw.keystore, password);
   if (!decrypted?.privateKey) {
     throw new SignerContextError(
-      'SIGNER_PASSWORD_REQUIRED',
+      SIGNER_ERROR_CODES.PASSWORD_REQUIRED,
       'failed to decrypt active CA keystore: wrong password or corrupted file',
     );
   }
@@ -166,7 +167,7 @@ function resolveFromContext(input: SignerContextInput): ResolvedSignerContext {
     (typeof raw.caAddress === 'string' ? raw.caAddress : undefined) || profile.caAddress;
   if (!caHash || !caAddress) {
     throw new SignerContextError(
-      'SIGNER_CONTEXT_INVALID',
+      SIGNER_ERROR_CODES.CONTEXT_INVALID,
       'active CA profile missing caHash/caAddress',
     );
   }
@@ -196,7 +197,7 @@ export function resolveSignerContext(
 
   if (mode === 'daemon') {
     throw new SignerContextError(
-      'SIGNER_DAEMON_NOT_IMPLEMENTED',
+      SIGNER_ERROR_CODES.DAEMON_NOT_IMPLEMENTED,
       'daemon signer provider is reserved for future release',
     );
   }
@@ -247,7 +248,7 @@ export function resolveSignerContext(
   }
 
   throw new SignerContextError(
-    'SIGNER_CONTEXT_NOT_FOUND',
+    SIGNER_ERROR_CODES.CONTEXT_NOT_FOUND,
     'no signer available from explicit/context/env',
   );
 }
