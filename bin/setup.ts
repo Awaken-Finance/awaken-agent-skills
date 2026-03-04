@@ -14,6 +14,7 @@
 
 import { Command } from 'commander';
 import * as fs from 'fs';
+import packageJson from '../package.json';
 import {
   getPackageRoot,
   getMcpServerPath,
@@ -33,7 +34,7 @@ const program = new Command();
 program
   .name('awaken-setup')
   .description('Configure @awaken-finance/agent-kit for various AI platforms')
-  .version('1.0.0');
+  .version(packageJson.version);
 
 // ---- Shared options ----
 const sharedOpts = (cmd: Command) =>

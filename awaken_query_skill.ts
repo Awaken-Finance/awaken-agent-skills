@@ -6,6 +6,7 @@
 // Core logic lives in src/core/query.ts
 
 import { Command } from 'commander';
+import packageJson from './package.json';
 import { getNetworkConfig } from './lib/config';
 import { outputSuccess, outputError } from './cli-helpers';
 import { getQuote, getPair, getTokenBalance, getTokenAllowance, getLiquidityPositions } from './src/core/query';
@@ -15,7 +16,7 @@ const program = new Command();
 program
   .name('awaken-query')
   .description('Awaken DEX read-only query tool')
-  .version('1.0.0')
+  .version(packageJson.version)
   .option('--network <network>', 'Network: mainnet or testnet', process.env.AWAKEN_NETWORK || 'mainnet');
 
 // ---- quote ----
