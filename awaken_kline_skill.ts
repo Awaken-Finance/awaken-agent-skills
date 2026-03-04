@@ -6,6 +6,7 @@
 // Core logic lives in src/core/kline.ts
 
 import { Command } from 'commander';
+import packageJson from './package.json';
 import { getNetworkConfig } from './lib/config';
 import { outputSuccess, outputError } from './cli-helpers';
 import { fetchKline, getKlineIntervals } from './src/core/kline';
@@ -15,7 +16,7 @@ const program = new Command();
 program
   .name('awaken-kline')
   .description('Awaken DEX K-line (candlestick) data tool')
-  .version('1.0.0')
+  .version(packageJson.version)
   .option('--network <network>', 'Network: mainnet or testnet', process.env.AWAKEN_NETWORK || 'mainnet');
 
 // ---- fetch ----

@@ -7,6 +7,7 @@
 // Core logic lives in src/core/trade.ts
 
 import { Command } from 'commander';
+import packageJson from './package.json';
 import { createSignerFromEnv } from '@portkey/aelf-signer';
 import { getNetworkConfig, DEFAULT_SLIPPAGE } from './lib/config';
 import { outputSuccess, outputError } from './cli-helpers';
@@ -17,7 +18,7 @@ const program = new Command();
 program
   .name('awaken-trade')
   .description('Awaken DEX trading tool (requires AELF_PRIVATE_KEY or Portkey CA env vars)')
-  .version('1.0.0')
+  .version(packageJson.version)
   .option('--network <network>', 'Network: mainnet or testnet', process.env.AWAKEN_NETWORK || 'mainnet');
 
 // ---- swap ----

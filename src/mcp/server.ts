@@ -11,6 +11,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { z } from 'zod';
+import packageJson from '../../package.json';
 
 import { getNetworkConfig } from '../../lib/config';
 import { resolveSignerContext } from '../../lib/signer-context';
@@ -21,7 +22,7 @@ import { fail } from './error';
 
 const server = new McpServer({
   name: 'awaken-agent-kit',
-  version: '1.0.0',
+  version: packageJson.version,
 });
 
 // Helper: wrap core call result as MCP tool response

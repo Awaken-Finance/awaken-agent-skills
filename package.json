@@ -1,6 +1,6 @@
 {
   "name": "@awaken-finance/agent-kit",
-  "version": "1.2.3",
+  "version": "1.2.4",
   "description": "AI Agent toolkit for Awaken DEX on aelf blockchain — swap tokens, manage liquidity, fetch K-line data. Supports MCP, CLI, and SDK usage.",
   "type": "module",
   "main": "index.ts",
