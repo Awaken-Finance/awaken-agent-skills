@@ -134,6 +134,13 @@ Important trust model note:
 - Do not rely on `~/.ironclaw/installed_skills/` for the primary install path when you need write approval behavior.
 - This MCP server emits both standard MCP camelCase annotations and IronClaw-compatible snake_case annotations so the current IronClaw source can honor read/write hints.
 
+Remote activation contract:
+
+- GitHub repo/tree URLs are discovery sources only, not the final IronClaw install payload.
+- Preferred IronClaw activation from npm: `bunx -p @awaken-finance/agent-kit awaken-setup ironclaw`
+- Prefer ClawHub / managed install for OpenClaw when available; otherwise use `bunx -p @awaken-finance/agent-kit awaken-setup openclaw`
+- Local repo checkout remains a development smoke-test path only.
+
 Minimal smoke test:
 
 1. `bun run bin/setup.ts ironclaw`
