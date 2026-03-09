@@ -16,6 +16,7 @@
     "src/",
     "lib/",
     "bin/",
+    "SKILL.md",
     "cli-helpers.ts",
     "awaken_query_skill.ts",
     "awaken_trade_skill.ts",

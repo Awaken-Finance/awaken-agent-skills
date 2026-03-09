@@ -2,12 +2,13 @@
 // ============================================================
 // Awaken Agent Kit — Setup CLI
 // ============================================================
-// One-command setup for Claude Desktop, Cursor, and OpenClaw.
+// One-command setup for Claude Desktop, Cursor, OpenClaw, and IronClaw.
 //
 // Usage:
 //   bun run bin/setup.ts claude             # Configure Claude Desktop MCP
 //   bun run bin/setup.ts cursor             # Configure Cursor (project)
 //   bun run bin/setup.ts cursor --global    # Configure Cursor (global)
+//   bun run bin/setup.ts ironclaw           # Configure IronClaw trusted skill + MCP
 //   bun run bin/setup.ts openclaw           # Generate OpenClaw config
 //   bun run bin/setup.ts list               # Show detected paths & status
 //   bun run bin/setup.ts uninstall claude   # Remove from Claude Desktop
@@ -27,6 +28,13 @@ import {
 } from './platforms/utils';
 import { setupClaude, uninstallClaude } from './platforms/claude';
 import { setupCursor, uninstallCursor } from './platforms/cursor';
+import {
+  getIronclawMcpConfigPath,
+  getIronclawSkillInstallPath,
+  getIronclawSkillsDir,
+  setupIronclaw,
+  uninstallIronclaw,
+} from './platforms/ironclaw';
 import { setupOpenClaw, uninstallOpenClaw } from './platforms/openclaw';
 
 const program = new Command();
@@ -72,6 +80,25 @@ sharedOpts(
     setupCursor({
       global: opts.global,
       configPath: opts.configPath,
+      serverPath: opts.serverPath,
+      force: opts.force,
+    });
+    console.log('');
+  });
+
+// ---- ironclaw ----
+sharedOpts(
+  program
+    .command('ironclaw')
+    .description('Setup trusted skill and MCP server for IronClaw'),
+)
+  .option('--mcp-config-path <path>', 'Custom IronClaw MCP config path')
+  .option('--skills-dir <path>', 'Custom IronClaw trusted skills directory')
+  .action((opts) => {
+    console.log('\n🔧 Setting up IronClaw...\n');
+    setupIronclaw({
+      mcpConfigPath: opts.mcpConfigPath,
+      skillsDir: opts.skillsDir,
       serverPath: opts.serverPath,
       force: opts.force,
     });
@@ -134,15 +161,31 @@ program
     console.log(`  Cursor (project): ${cursorProject}`);
     console.log(`    Config exists: ${cursorProjectExists ? '✅' : '—'}  |  ${SERVER_NAME}: ${cursorProjectHasUs ? '✅ configured' : '— not configured'}`);
 
+    const ironclawMcpPath = getIronclawMcpConfigPath();
+    const ironclawSkillsDir = getIronclawSkillsDir();
+    const ironclawSkillPath = getIronclawSkillInstallPath(ironclawSkillsDir);
+    const ironclawMcpExists = fs.existsSync(ironclawMcpPath);
+    const ironclawConfig = ironclawMcpExists ? readJsonFile(ironclawMcpPath) : null;
+    const ironclawHasUs = Array.isArray(ironclawConfig?.servers)
+      ? ironclawConfig.servers.some((server: any) => server?.name === SERVER_NAME)
+      : false;
+    const ironclawSkillExists = fs.existsSync(ironclawSkillPath);
+    console.log(`  IronClaw: ${ironclawMcpPath}`);
+    console.log(
+      `    MCP entry: ${ironclawHasUs ? '✅ configured' : '— not configured'}  |  trusted skill: ${ironclawSkillExists ? '✅ present' : '— missing'}`,
+    );
+
     console.log('');
   });
 
 // ---- uninstall ----
 program
   .command('uninstall <platform>')
-  .description('Remove Awaken config from a platform (claude, cursor, openclaw)')
+  .description('Remove Awaken config from a platform (claude, cursor, ironclaw, openclaw)')
   .option('--global', 'For cursor: target global config', false)
   .option('--config-path <path>', 'Custom config file path')
+  .option('--mcp-config-path <path>', 'Custom IronClaw MCP config path')
+  .option('--skills-dir <path>', 'Custom IronClaw trusted skills directory')
   .action((platform, opts) => {
     console.log(`\n🗑️  Removing Awaken config from ${platform}...\n`);
 
@@ -153,11 +196,17 @@ program
       case 'cursor':
         uninstallCursor({ global: opts.global, configPath: opts.configPath });
         break;
+      case 'ironclaw':
+        uninstallIronclaw({
+          mcpConfigPath: opts.mcpConfigPath,
+          skillsDir: opts.skillsDir,
+        });
+        break;
       case 'openclaw':
         uninstallOpenClaw({ configPath: opts.configPath });
         break;
       default:
-        LOG.error(`Unknown platform: ${platform}. Use: claude, cursor, or openclaw.`);
+        LOG.error(`Unknown platform: ${platform}. Use: claude, cursor, ironclaw, or openclaw.`);
     }
     console.log('');
   });
