@@ -103,6 +103,9 @@ bun run bin/setup.ts cursor
 # 配置 Cursor（全局）
 bun run bin/setup.ts cursor --global
 
+# 配置 IronClaw
+bun run bin/setup.ts ironclaw
+
 # 生成 OpenClaw 配置
 bun run bin/setup.ts openclaw
 
@@ -111,9 +114,38 @@ bun run bin/setup.ts list
 
 # 从平台移除配置
 bun run bin/setup.ts uninstall claude
+bun run bin/setup.ts uninstall ironclaw
 ```
 
 setup 工具自动检测操作系统、推导路径、安全合并配置（不会覆盖其他 MCP server）。配置完成后，编辑生成的配置文件，将 `<YOUR_PRIVATE_KEY>` 替换为你的实际私钥。
+
+### IronClaw
+
+```bash
+bun run bin/setup.ts ironclaw
+bun run bin/setup.ts uninstall ironclaw
+```
+
+IronClaw 安装会向 `~/.ironclaw/mcp-servers.json` 写入 stdio MCP entry，并把当前仓库的 `SKILL.md` 安装到 `~/.ironclaw/skills/awaken-agent-skills/SKILL.md`。
+
+关于 trust model 的说明：
+
+- 如果要执行 swap、liquidity、approve 这类写能力，必须使用上面的 trusted skill 路径。
+- 不要把 `~/.ironclaw/installed_skills/` 当成主安装路径，否则写操作的 approval 行为会不稳定。
+- 当前 MCP server 会同时输出标准 MCP camelCase annotations 和 IronClaw 兼容 snake_case annotations，确保 IronClaw 能识别读写 hints。
+
+远程激活契约：
+
+- GitHub repo/tree URL 只用于 discovery，不是最终的 IronClaw 安装载体。
+- 推荐的 IronClaw npm 激活命令：`bunx -p @awaken-finance/agent-kit awaken-setup ironclaw`
+- OpenClaw 若有 ClawHub / managed install 则优先使用；否则回退到 `bunx -p @awaken-finance/agent-kit awaken-setup openclaw`
+- 本地 repo checkout 仅保留给开发阶段 smoke test。
+
+最短 smoke test：
+
+1. `bun run bin/setup.ts ironclaw`
+2. 让 IronClaw 查询 `quote ELF to USDT on Awaken`
+3. 再让它执行 `approve ELF for Awaken`，确认执行前会出现 approval
 
 **高级选项：**
 

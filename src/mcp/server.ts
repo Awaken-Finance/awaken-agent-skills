@@ -36,6 +36,18 @@ function registerTool(name: string, definition: any, handler: McpToolHandler) {
   return (server.registerTool as any)(name, definition, handler);
 }
 
+const READ_ONLY_ANNOTATIONS = {
+  readOnlyHint: true,
+  read_only_hint: true,
+} as const;
+
+const NETWORK_WRITE_ANNOTATIONS = {
+  destructiveHint: true,
+  destructive_hint: true,
+  openWorldHint: true,
+  side_effects_hint: true,
+} as const;
+
 const signerInputSchema = z
   .object({
     signerMode: z.enum(['auto', 'explicit', 'context', 'env', 'daemon']).optional(),
@@ -68,6 +80,7 @@ registerTool(
       amountOut: z.string().optional().describe('Human-readable amount of output token for reverse quote'),
       network: z.enum(['mainnet', 'testnet']).default('mainnet').describe('Network environment'),
     },
+    annotations: READ_ONLY_ANNOTATIONS,
   },
   async ({ symbolIn, symbolOut, amountIn, amountOut, network }) => {
     try {
@@ -91,6 +104,7 @@ registerTool(
       feeRate: z.string().default('0.3').describe('Fee tier: 0.05, 0.1, 0.3, 3, or 5'),
       network: z.enum(['mainnet', 'testnet']).default('mainnet'),
     },
+    annotations: READ_ONLY_ANNOTATIONS,
   },
   async ({ token0, token1, feeRate, network }) => {
     try {
@@ -112,6 +126,7 @@ registerTool(
       symbol: z.string().describe('Token symbol (e.g. ELF, USDT)'),
       network: z.enum(['mainnet', 'testnet']).default('mainnet'),
     },
+    annotations: READ_ONLY_ANNOTATIONS,
   },
   async ({ address, symbol, network }) => {
     try {
@@ -135,6 +150,7 @@ registerTool(
       symbol: z.string().describe('Token symbol'),
       network: z.enum(['mainnet', 'testnet']).default('mainnet'),
     },
+    annotations: READ_ONLY_ANNOTATIONS,
   },
   async ({ owner, spender, symbol, network }) => {
     try {
@@ -158,6 +174,7 @@ registerTool(
       token1: z.string().optional().describe('Filter by token symbol'),
       network: z.enum(['mainnet', 'testnet']).default('mainnet'),
     },
+    annotations: READ_ONLY_ANNOTATIONS,
   },
   async ({ address, token0, token1, network }) => {
     try {
@@ -187,6 +204,7 @@ registerTool(
       network: z.enum(['mainnet', 'testnet']).default('mainnet'),
       signer: signerInputSchema,
     },
+    annotations: NETWORK_WRITE_ANNOTATIONS,
   },
   async ({ symbolIn, symbolOut, amountIn, slippage, network, signer }) => {
     try {
@@ -218,6 +236,7 @@ registerTool(
       network: z.enum(['mainnet', 'testnet']).default('mainnet'),
       signer: signerInputSchema,
     },
+    annotations: NETWORK_WRITE_ANNOTATIONS,
   },
   async ({ tokenA, tokenB, amountA, amountB, feeRate, slippage, network, signer }) => {
     try {
@@ -247,6 +266,7 @@ registerTool(
       network: z.enum(['mainnet', 'testnet']).default('mainnet'),
       signer: signerInputSchema,
     },
+    annotations: NETWORK_WRITE_ANNOTATIONS,
   },
   async ({ tokenA, tokenB, lpAmount, feeRate, network, signer }) => {
     try {
@@ -275,6 +295,7 @@ registerTool(
       network: z.enum(['mainnet', 'testnet']).default('mainnet'),
       signer: signerInputSchema,
     },
+    annotations: NETWORK_WRITE_ANNOTATIONS,
   },
   async ({ symbol, spender, amount, network, signer }) => {
     try {
@@ -308,6 +329,7 @@ registerTool(
       timeout: z.number().default(15000).describe('Max wait time in ms'),
       network: z.enum(['mainnet', 'testnet']).default('mainnet'),
     },
+    annotations: READ_ONLY_ANNOTATIONS,
   },
   async ({ tradePairId, interval, from, to, timeout, network }) => {
     try {
@@ -325,6 +347,7 @@ registerTool(
   {
     description: 'List all supported K-line time intervals with their period in seconds.',
     inputSchema: {},
+    annotations: READ_ONLY_ANNOTATIONS,
   },
   async () => {
     return ok(getKlineIntervals());

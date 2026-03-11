@@ -103,6 +103,9 @@ bun run bin/setup.ts cursor
 # Setup for Cursor (global)
 bun run bin/setup.ts cursor --global
 
+# Setup for IronClaw
+bun run bin/setup.ts ironclaw
+
 # Generate OpenClaw config
 bun run bin/setup.ts openclaw
 
@@ -111,9 +114,38 @@ bun run bin/setup.ts list
 
 # Remove config from a platform
 bun run bin/setup.ts uninstall claude
+bun run bin/setup.ts uninstall ironclaw
 ```
 
 The setup tool auto-detects your OS, resolves paths, and merges config safely (won't overwrite other MCP servers). After setup, edit the generated config to replace `<YOUR_PRIVATE_KEY>` with your actual key.
+
+### IronClaw
+
+```bash
+bun run bin/setup.ts ironclaw
+bun run bin/setup.ts uninstall ironclaw
+```
+
+The IronClaw setup writes a stdio MCP entry to `~/.ironclaw/mcp-servers.json` and installs this repo's `SKILL.md` to `~/.ironclaw/skills/awaken-agent-skills/SKILL.md`.
+
+Important trust model note:
+
+- Use the trusted skill path above for write-capable flows such as swap, liquidity, and approve.
+- Do not rely on `~/.ironclaw/installed_skills/` for the primary install path when you need write approval behavior.
+- This MCP server emits both standard MCP camelCase annotations and IronClaw-compatible snake_case annotations so the current IronClaw source can honor read/write hints.
+
+Remote activation contract:
+
+- GitHub repo/tree URLs are discovery sources only, not the final IronClaw install payload.
+- Preferred IronClaw activation from npm: `bunx -p @awaken-finance/agent-kit awaken-setup ironclaw`
+- Prefer ClawHub / managed install for OpenClaw when available; otherwise use `bunx -p @awaken-finance/agent-kit awaken-setup openclaw`
+- Local repo checkout remains a development smoke-test path only.
+
+Minimal smoke test:
+
+1. `bun run bin/setup.ts ironclaw`
+2. Ask IronClaw for a read prompt like `quote ELF to USDT on Awaken`
+3. Ask it to `approve ELF for Awaken` and confirm approval appears before execution
 
 **Advanced options:**
 
