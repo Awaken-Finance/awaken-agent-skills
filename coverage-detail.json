@@ -3,9 +3,9 @@
   "coverageModel": "bun-text-all-files-by-file-average",
   "byFileAverage": {
     "lines": {
-      "total": 12,
-      "covered": 12,
-      "pct": 93.79083707381494
+      "total": 14,
+      "covered": 14,
+      "pct": 90.32813283771465
     },
     "functions": {
       "total": 0,
@@ -20,9 +20,9 @@
   },
   "weighted": {
     "lines": {
-      "total": 1133,
-      "covered": 1042,
-      "pct": 91.96822594880847
+      "total": 1389,
+      "covered": 1241,
+      "pct": 89.34485241180705
     },
     "functions": {
       "total": 0,
@@ -36,6 +36,42 @@
     }
   },
   "files": [
+    {
+      "file": "bin/platforms/ironclaw.ts",
+      "lines": {
+        "total": 167,
+        "covered": 161,
+        "pct": 96.40718562874252
+      },
+      "functions": {
+        "total": 0,
+        "covered": 0,
+        "pct": 0
+      },
+      "branches": {
+        "total": 0,
+        "covered": 0,
+        "pct": 0
+      }
+    },
+    {
+      "file": "bin/platforms/utils.ts",
+      "lines": {
+        "total": 89,
+        "covered": 38,
+        "pct": 42.69662921348314
+      },
+      "functions": {
+        "total": 0,
+        "covered": 0,
+        "pct": 0
+      },
+      "branches": {
+        "total": 0,
+        "covered": 0,
+        "pct": 0
+      }
+    },
     {
       "file": "cli-helpers.ts",
       "lines": {
